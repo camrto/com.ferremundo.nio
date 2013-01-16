@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+	<persistence-unit name="client" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/ormclient.xml</mapping-file>
+		<class>com.ferremundo.Client</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.Client;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+	
+	
+	<persistence-unit name="product" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/ormproduct.xml</mapping-file>
+		<class>com.ferremundo.Product</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.Product;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+	
+	
+	<persistence-unit name="clientsample" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/ormclientsample.xml</mapping-file>
+		<class>com.ferremundo.ClientSample</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.ClientSample;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+	
+	
+	<persistence-unit name="productsample" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/ormproductsample.xml</mapping-file>
+		<class>com.ferremundo.ProductSample</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.ProductSample;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+	
+	
+	<persistence-unit name="ref" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/ormref.xml</mapping-file>
+		<class>com.ferremundo.REF</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.REF;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+	
+	<persistence-unit name="invoicefm01" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/orminvoicefm01.xml</mapping-file>
+		<class>com.ferremundo.InvoiceFM01</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.InvoiceFM01;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+	
+	<persistence-unit name="invoiceserial" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/orminvoiceserial.xml</mapping-file>
+		<class>com.ferremundo.InvoiceSerial</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.InvoiceSerial;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+	
+	<persistence-unit name="seller" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/ormseller.xml</mapping-file>
+		<class>com.ferremundo.Seller</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.Seller;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+
+	<persistence-unit name="shopman" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/ormshopman.xml</mapping-file>
+		<class>com.ferremundo.Shopman</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.Shopman;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+	
+	<persistence-unit name="destiny" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/ormdestiny.xml</mapping-file>
+		<class>com.ferremundo.Destiny</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.Destiny;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+
+	<persistence-unit name="requester" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/ormrequester.xml</mapping-file>
+		<class>com.ferremundo.Requester</class>
+		<properties>
+			<!--property name="eclipselink.ddl-generation" value="drop-and-create-tables"/-->
+			<property name="eclipselink.ddl-generation" value="create-tables"/>
+			<property name="eclipselink.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
+			<property name="eclipselink.jdbc.url" value="jdbc:derby://localhost:1527//opt/store/com.ferremundo.Requester;create=true"/>
+			<property name="eclipselink.jdbc.user" value="root"/>
+			<property name="eclipselink.jdbc.password" value="killer"/>
+		</properties>
+	</persistence-unit>
+</persistence>
