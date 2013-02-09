@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<!--  files and folders -->
+<entry key="TMP_FOLDER">/opt/fm/tmp/</entry>
+
+<!--  Mongo settings -->
+<entry key="MONGO_DB_HOST">localhost</entry>
+<entry key="MONGO_DB_PORT">27000</entry>
+<entry key="SPREADSHEET_DB_FILE">/opt/fm/DB.ods</entry>
+
+<!--  Printing settings -->
+<entry key="PRINTER_ONE"></entry>
+<entry key="PRINTER_TWO"></entry>
+<entry key="PRINTER_THREE"></entry>
+<entry key="PRINTER_FOUR"></entry>
+
+<!--  Invoicing settings -->
+<entry key="CERTIFICATE">/opt/fm/auth/C.cer</entry>
+<entry key="PRIVATE_KEY">/opt/fm/auth/C.key</entry>
+<entry key="PRIVATE_KEY_PASS">pass</entry>
+<entry key="SSL">/usr/bin/openssl</entry>
+<entry key="INVOICE_SERIAL">CFDI</entry>
+<entry key="INVOICE_SENDER_NAME">YOURNAME</entry>
+<entry key="INVOICE_SENDER_TAX_CODE">RFC</entry>
+<entry key="INVOICE_SENDER_COUNTRY">MEXICO</entry>
+<entry key="INVOICE_SENDER_STATE">MICHOACAN</entry>
+<entry key="INVOICE_SENDER_CITY">MORELIA</entry>
+<entry key="INVOICE_SENDER_LOCALITY">MORELIA</entry>
+<entry key="INVOICE_SENDER_SUBURB">ST</entry>
+<entry key="INVOICE_SENDER_STREET"></entry>
+<entry key="INVOICE_SENDER_EXTEROR_NUMBER"></entry>
+<entry key="INVOICE_SENDER_INTERIOR_NUMBER"></entry>
+<entry key="INVOICE_SENDER_POSTAL_CODE"></entry>
+<entry key="INVOICE_SENDER_REGIME">INTERMEDIO</entry>
+<entry key="INVOICE_CERTIFICATE_AUTHORIRY_USER">dfsfs@live.com</entry>
+<entry key="INVOICE_CERTIFICATE_AUTHORIRY_PASS">sdfsdf</entry>
+
+</properties>
