@@ -18,6 +18,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import com.ferremundo.stt.GSettings;
+
 public class HotmailSend {
 	
 	public static void main(String[] args) {
@@ -38,7 +40,7 @@ public class HotmailSend {
 			props.setProperty("mail.smtp.host", "smtp.live.com");
 			props.setProperty("mail.smtp.starttls.enable", "true");
 			props.setProperty("mail.smtp.port", "587");
-			props.setProperty("mail.smtp.user", "ferremundo@live.com");
+			props.setProperty("mail.smtp.user", GSettings.get("EMAIL_NOTIFICATIONS"));
 			props.setProperty("mail.smtp.auth", "true");
 
 			System.out.println("Enviando…");
@@ -47,7 +49,7 @@ public class HotmailSend {
 
 			// Construimos el mensaje
 			MimeMessage message = new MimeMessage(session);
-			message.setFrom(new InternetAddress("ferremundo@live.com"));
+			message.setFrom(new InternetAddress(GSettings.get("EMAIL_NOTIFICATIONS")));
 			for(String recipient : mails){
 				message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
 			}
@@ -65,7 +67,7 @@ public class HotmailSend {
 			
 			// Lo enviamos.
 			Transport t = session.getTransport("smtp");
-			t.connect("ferremundo@live.com", "Chingatumadr3");
+			t.connect(GSettings.get("EMAIL_NOTIFICATIONS"), GSettings.get("EMAIL_NOTIFICATIONS_PASS"));
 			t.sendMessage(message, message.getAllRecipients());
 
 			// Cierre.
