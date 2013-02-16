@@ -1,6 +1,8 @@
 package com.ferremundo;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +20,7 @@ import org.json.JSONObject;
 import com.ferremundo.OnlineClient;
 import com.ferremundo.db.Mongoi;
 import com.google.common.collect.Iterators;
+import com.ibm.icu.text.DecimalFormat;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
@@ -119,7 +122,12 @@ public class Product implements Serializable {
 	}
 
 	public float getUnitPrice() {
-		return unitPrice;
+		return roundTo6(unitPrice);
+	}
+	public float roundTo6(float f){
+		BigDecimal big = new BigDecimal(f);
+		big = big.setScale(6, RoundingMode.HALF_UP);
+		return big.floatValue();
 	}
 	
 	public Float getUnitPrice(int consummerType) {
@@ -143,7 +151,7 @@ public class Product implements Serializable {
 			else if(productPriceKind==Product.KIND_2)unitPrice*=Product.FACTOR_4;
 		}
 		//if()
-		return unitPrice;
+		return roundTo6(unitPrice);
 	}
 
 	public void setUnitPrice(float unitPrice) {

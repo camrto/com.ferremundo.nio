@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Mongoi;
+import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
@@ -110,7 +111,7 @@ public class Facturing extends HttpServlet{
 				//EntityManager emis=EMF.get(EMF.UNIT_INVOICEFM01).createEntityManager();
 				//emis.getTransaction().begin();
 				for(int i=0;i<invoices.length;i++){
-					String pathname=ProjectProperties.TMP_DIR+invoices[i].getReference();
+					String pathname=GSettings.get("TMP_FOLDER")+invoices[i].getReference();
 					File pdf= new PDF(invoices[i], pathname).make();
 					//System.out.println("invoices["+i+"]: "+invoices[i].toJson());
 					new PrinterFM01(pdf, PrinterFM01.PRINTER_ONE).print();

@@ -5,7 +5,7 @@ xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 
- 
+ <!-- 
 <security-constraint>
     <web-resource-collection>
         <web-resource-name>secured page</web-resource-name>
@@ -15,7 +15,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
     </user-data-constraint>
 </security-constraint>
-
+ -->
 <!-- ==== Default Session Configuration ==== -->
 <!-- You can set the default session timeout (in minutes) for all newly   -->
 <!-- created sessions by modifying the value below.                       -->
@@ -172,24 +172,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	</servlet-mapping>
 	
 	<servlet>
-		<servlet-name>updateproduct</servlet-name>
-		<servlet-class>com.ferremundo.inflate.InflateProducts</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>updateproduct</servlet-name>
-		<url-pattern>/updateproduct</url-pattern>
-	</servlet-mapping>
-
-	<servlet>
-		<servlet-name>updateclient</servlet-name>
-		<servlet-class>com.ferremundo.inflate.InflateClients</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>updateclient</servlet-name>
-		<url-pattern>/updateclient</url-pattern>
-	</servlet-mapping>
-	
-	<servlet>
 		<servlet-name>facture</servlet-name>
 		<servlet-class>com.ferremundo.Facturing</servlet-class>
 	</servlet>
@@ -208,7 +190,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	</servlet-mapping>
 	
 	<welcome-file-list>
-		<welcome-file>init9.jsp</welcome-file>
+		<welcome-file>init.jsp</welcome-file>
 	</welcome-file-list>
 	
 </web-app>

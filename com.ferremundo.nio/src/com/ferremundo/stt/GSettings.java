@@ -33,17 +33,6 @@ public class GSettings extends Properties{
 		}
 	}
 	
-	public static void main(String[] args) {
-		Properties properties=new Properties();
-		properties.setProperty("verga", "es ray");
-		System.out.println(properties.get("verga"));
-		GSettings.instance();
-		System.out.println(GSettings.instance().hasKey("one-two"));
-		System.out.println(GSettings.instance().getKey("TMP_FOLDER"));
-		System.out.println(new GSettings().getKey("TMP_FOLDER"));
-		System.out.println(GSettings.get("TMP_FOLDER"));
-	}
-	
 	public static GSettings instance(){
 		if(gSettings==null){
 			gSettings=new GSettings();

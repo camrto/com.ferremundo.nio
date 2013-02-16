@@ -23,6 +23,7 @@ import com.ferremundo.Invoice;
 import com.ferremundo.InvoiceFM01;
 import com.ferremundo.MD5;
 import com.ferremundo.Product;
+import com.ferremundo.stt.GSettings;
 import com.google.common.collect.Iterators;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -34,12 +35,14 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
+import com.mongodb.util.Hash;
 import com.mongodb.util.JSON;
 
 public class Mongoi {
 	
 	private static Mongo mongo=null;
-	public static final String HOST="localhost";
+	public static final String HOST=GSettings.get("MONGO_DB_HOST");
+	public static final String PORT=GSettings.get("MONGO_DB_PORT");
 	public static final String GLOBAL_DB="globaldb";
 	public static final String INVOICES="invoices";
 	public static final String CLIENTS="clients";
@@ -92,7 +95,7 @@ public class Mongoi {
 				return;
 			}	
 			try {
-				mongo = new Mongo(HOST);
+				mongo = new Mongo(HOST,new Integer(PORT));
 				db = mongo.getDB(GLOBAL_DB);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
@@ -257,7 +260,8 @@ public class Mongoi {
 		return db.getCollection(coll);
 	}
 	
-	public static void main(String[] args) {
+	
+	private void deadcode(){
 		//System.out.println(new Calendar().);
 		//Long l=new Date(new Date().)
 		/*DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
@@ -273,6 +277,7 @@ public class Mongoi {
 		while(cursor.hasNext()){
 			System.out.println(cursor.next());
 		}*/
+		/*
 		DBObject object=new Mongoi().doFindOne(INVOICES, "{ \"reference\" : \"40WA\" }");
 		Invoice invoice=new Gson().fromJson(
 				object.toString(),InvoiceFM01.class
@@ -292,10 +297,10 @@ public class Mongoi {
 		for(DBObject dbObject : list){
 			System.out.println("list->"+dbObject);
 		}
-		
+		*/
 		//System.out.println(new Mongoi().doFindOne(SHOPMANS, "{ \"login\" : \"user1\" }"));
 		//System.out.println(new Mongoi().doFindOne(SHOPMANS, "{ \"login\" : \"root\" }"));
-		//new Mongoi().doUpdate(SHOPMANS, "{ \"login\" : \"\" }", "{ \"password\" : \""+MD5.get("la concha y la remilputisisisisisisisisima madre que los pario a todos")+"\" }");
+		//new Mongoi().doUpdate(SHOPMANS, "{ \"login\" : \"\" }", "{ \"password\" : \""+MD5.get("not set")+"\" }");
 		//new Mongoi().doUpdate(INVOICES, "{ \"reference\" : \"3ZVW\" }", "{ \"shopman.password\" : \"*\" }");
 		/*Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String json = new Mongoi().doFindOne(PRODUCTS, "{ \"code\" : \"N70713\" }").toString();
@@ -375,6 +380,11 @@ public class Mongoi {
 		while(cursor.hasNext()){
 			System.out.println(cursor.next());
 		}*/
+	}
+	public static void main(String[] args) {
+		DBObject dbObject=new Mongoi().doFindOne(INVOICES, "{\"reference\" : \"43RF\"}");
+		System.out.println(dbObject);
+		
 		
 	}
 	

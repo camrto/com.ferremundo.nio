@@ -50,6 +50,8 @@
 <script type="text/javascript" src="js/jspdf/jspdf.plugin.split_text_to_size.js"></script>
 <script type="text/javascript" src="js/jspdf/jspdf.plugin.from_html.js"></script>
 
+<script type="text/javascript" src="js/jquery.blockUI.js"></script>
+
 
 
 <link rel="stylesheet" type="text/css" href="css/layout.css">
@@ -224,7 +226,38 @@ $(document).ready(function(){
         close: function() {
         }
     });
-
+	$('#editproduct-6').keyup(function(event){
+		if(event.keyCode==$.ui.keyCode.ENTER){
+			var e1=$('#editproduct-1').val();
+			var e2=$('#editproduct-2').val();
+			var e3=$('#editproduct-3').val();
+			var e4=$('#editproduct-4').val();
+			var e5=$('#editproduct-5').val();
+			var e6=$('#editproduct-6').val();
+			var quantity=e1;
+			var unit=e2!=''?e2:'s/u';
+			var description=e3!=''?e3:'s/d';
+			var code=e4!=''?e4:'s/c';
+			var mark=e5!=''?e5:'s/m';
+			var unitPrice=e6;
+			if(unitPrice==''||!parseFloat(e6)||quantity==''||!parseFloat(quantity)){alert("precio unitario invalido y/o cantidad");return;}
+			var json="{"+
+				'"quantity":"'+quantity+'",'+
+				'"unit":"'+unit+'",'+
+				'"description":"'+description+'",'+
+				'"code":"'+code+'",'+
+				'"mark":"'+mark+'",'+
+				'"productPriceKind":"-1",'+
+				'"unitPrice":"'+unitPrice+'",'+
+				'"id":"-1" }';
+			productsLog.unshift($.parseJSON( json ));
+			$('#editproduct').hide('slow');
+			$('#commands').focus().val('');
+			dolog(quantity,unit,description,code,mark,unitPrice);
+			$('.tableingrow').sexytable({'editedRow':true,'index':$('.tableingrow').get(0)});
+			onLogChange();
+		}
+	});
 	$('#password').unbind('keydown').unbind('keypress').bind('keypress',function(event){
 		if(event.which!=13)return;
 		$( "#login-form" ).dialog("option", "buttons")['login'].apply($( "#login-form" )[0]);
@@ -442,7 +475,7 @@ $(document).ready(function(){
 				}
 				*/
 				//alert(" kind "+commandline.kind);
-				
+				$.blockUI({ message: '<h1><img src="img/wait.gif" /> esperar...</h1>' });
 				$.ajax({
 					type: 'POST',
 					url: 'wishing',
@@ -465,6 +498,10 @@ $(document).ready(function(){
 						$('#commands').val('');
 						invoiceInfoLog(data.invoice);
 						alert(data.successResponse);
+						$.unblockUI();
+					},
+					error: function(){
+						$.unblockUI();
 					},
 					dataType:"json"
 				});
@@ -708,7 +745,7 @@ $(document).ready(function(){
 								gtotal+=quantity*unitPrice;
 								for(var field in item){
 									for(var k=0;k<commandline.args.length;k++){
-										if(!isNumber(item[field])){
+										if(typeOf(item[field])=="string"){
 											item[field]=item[field].replace(commandline.args[k].toUpperCase().replace(/\"/g,""),"<i style='background-color:#fbff8d'><b>"+commandline.args[k].toUpperCase().replace(/\"/g,"")+"</b></i>");
 											//if(item[field].indexOf(commandline.args[k].toUpperCase())!=-1)contains=true;	
 										}
@@ -743,7 +780,7 @@ $(document).ready(function(){
 								agentRfc=data.invoices[i].agent.rfc;
 								agentType=data.invoices[i].agent.consummerType;
 							}
-							
+							var invoices=data.invoices;
 							var consummerContent="<b>fecha:</b>"+date+
 								" | <b>ref:</b>"+reference+
 								(invoices[i].totalValue?" | <b>totalValue:</b>"+invoices[i].totalValue:"")+

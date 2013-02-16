@@ -16,6 +16,7 @@ import com.ferremundo.Invoice;
 import com.ferremundo.InvoiceForm;
 import com.ferremundo.db.Mongoi;
 import com.ferremundo.gth.PtsConverter;
+import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -62,7 +63,7 @@ public class PDF {
 	public PDF(Invoice invoice,String out){
 		InputStream stream=null;
 		try{
-			stream=new FileInputStream(new File(ProjectProperties.FORM_DESCRIPTOR));
+			stream=new FileInputStream(new File(GSettings.get("INVOICE_FORM_DESCRIPTOR")));
 		}catch(FileNotFoundException e){e.printStackTrace();}
 		form=new InvoiceFormFM01(stream);
 		this.invoice=invoice;

@@ -1,13 +1,28 @@
 package com.ferremundo;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.net.URLDecoder;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
+import mx.nafiux.Rhino;
 
 import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Mongoi;
+import com.ferremundo.mailing.HotmailSend;
+import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
 import com.mongodb.DBObject;
 
@@ -50,6 +65,72 @@ public class InvoiceCancelling extends HttpServlet{
 					}
 					invoice=new Gson().fromJson(oInvoice.toString(), InvoiceFM01.class);
 					if(invoice.attemptToLog(LogKind.CANCEL).isAllowed()){
+						if(invoice.hasElectronicVersion()){
+							DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
+						    DocumentBuilder builder=null;
+						    Document document=null;
+						    try  
+						    {  
+						        builder = factory.newDocumentBuilder();  
+						        document = builder.parse(
+						        		new InputSource( 
+						        				new StringReader( invoice.getElectronicVersion().getXml() ) ) );  
+						    } catch (Exception e) {  
+						        e.printStackTrace();  
+						    }
+						    Node node=document.getElementsByTagName("tfd:TimbreFiscalDigital").item(0);
+						    Element e=(Element)node;
+						    String uuid=e.getAttribute("UUID");
+						    
+							GSettings g=GSettings.instance();
+							Rhino rhino= new Rhino(
+									g.getKey("CERTIFICATE"),
+									g.getKey("PRIVATE_KEY"),
+									g.getKey("PRIVATE_KEY_PASS"));
+							String cancel=rhino.cancelar(g.getKey("INVOICE_CERTIFICATE_AUTHORIRY_USER"), 
+									g.getKey("INVOICE_CERTIFICATE_AUTHORIRY_PASS"),
+									g.getKey("INVOICE_SENDER_TAX_CODE"),
+									uuid);
+							document = builder.parse(new ByteArrayInputStream(cancel.getBytes()));
+							NodeList nlist=document.getElementsByTagName("codigo");
+							System.out.println("CANCEL RESPONSE: "+cancel);
+							if(nlist.item(0).getTextContent().equals("0")){
+								String xml=document.getElementsByTagName("xmlretorno").item(0).getTextContent();
+								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.cancelXml\" : \""+StringEscapeUtils.unescapeXml(xml)+"\"}");
+								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.active\" : false }");
+								JGet.stringTofile(
+										StringEscapeUtils.unescapeXml(xml),
+										GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml");
+								if(!invoice.getClient().getEmail().equals("")){
+									HotmailSend.send(
+										"factura CANCELADA "+invoice.getReference(),
+										"FERREMUNDO AGRADECE SU PREFERENCIA",
+										invoice.getClient().getEmail().split(" "),
+										new String[]{
+											GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
+										new String[]{invoice.getReference()+"-CANCELADO.xml"}
+										
+										);
+									
+								}
+								if(!invoice.getAgent().getEmail().equals("")){
+									HotmailSend.send(
+											"factura CANCELADA "+invoice.getReference(),
+											"FERREMUNDO AGRADECE SU PREFERENCIA",
+											invoice.getAgent().getEmail().split(" "),
+											new String[]{
+												GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
+											new String[]{invoice.getReference()+"-CANCELADO.xml"}
+											
+											);
+								}
+							}
+							else{
+								response.setStatus( HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+								response.getWriter().write("ERROR: "+document.getElementsByTagName("mensaje").item(0).getTextContent());
+								return;
+							}
+						}
 						InvoiceLog log=new InvoiceLog(InvoiceLog.LogKind.CANCEL,true,onlineClient.getShopman().getLogin());
 						InvoiceLog closeLog=new InvoiceLog(InvoiceLog.LogKind.CLOSE,true,onlineClient.getShopman().getLogin());
 						new Mongoi().doPush(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{\"logs\" : "+new Gson().toJson(log)+" }");
@@ -66,8 +147,10 @@ public class InvoiceCancelling extends HttpServlet{
 								LogKind.CANCEL.toString(),
 								onlineClient.getShopman().getLogin()
 								));
+						
 						String successResponse="CANCELADO "+invoice.getReference()+": se realizó entrada-salida en caja $"+cashIn+"-$"+cashOut+" --> $"+(cashIn-cashOut);
 						response.getWriter().write("{ \"message\":\""+successResponse+"\" }");
+						
 						return;
 					}
 					else {

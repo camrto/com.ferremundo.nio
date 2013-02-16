@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import com.ferremundo.stt.GSettings;
 import com.lowagie.text.Rectangle;
 
 public class Sampling implements InvoiceHandler {
@@ -15,8 +16,8 @@ public class Sampling implements InvoiceHandler {
 	InvoiceForm form=null;
 	
 	public Sampling(Invoice invoice) throws FileNotFoundException{
-		form=new InvoiceFormFM01(new FileInputStream(ProjectProperties.FORM_DESCRIPTOR));
-		File pdf=new PDF(invoice, form, "/home/god/tmp/"+invoice.getReference()+".pdf").make();
+		form=new InvoiceFormFM01(new FileInputStream(GSettings.get("INVOICE_FORM_DESCRIPTOR")));
+		File pdf=new PDF(invoice, form, GSettings.get("TMP_FOLDER")+invoice.getReference()+".pdf").make();
 	}
 	
 	public void start(){

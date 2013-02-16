@@ -24,7 +24,7 @@ public class SearchInvoices extends HttpServlet{
 
 	private static int MAX_RESULTS=20;
 	 
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException{
 		int clientReference=new Integer(req.getParameter("clientReference"));
 		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);

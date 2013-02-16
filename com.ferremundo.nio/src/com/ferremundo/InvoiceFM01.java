@@ -1,5 +1,7 @@
 package com.ferremundo;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Mongoi;
 import com.ferremundo.gth.SpanishInvoiceNumber;
 import com.google.gson.Gson;
+import com.ibm.icu.text.DecimalFormat;
 
 
 public class InvoiceFM01 implements Invoice{
@@ -24,7 +27,7 @@ public class InvoiceFM01 implements Invoice{
     
     private int invoiceType=Invoice.INVOICE_TYPE_ORDER;
     
-    private int serial=-1;
+    private long serial=8;
 	
 	private Client client;
 	
@@ -59,6 +62,11 @@ public class InvoiceFM01 implements Invoice{
 	private float debt;
 	
 	private float agentPayment;
+	
+	private InvoiceElectronicVersion electronicVersion;
+	
+	private boolean hasElectronicVersion=false;
+	
 	@Override
 	public float getAgentPayment() {
 		return agentPayment;
@@ -137,9 +145,6 @@ public class InvoiceFM01 implements Invoice{
 		System.out.println("SUBTOTAL:"+subTotal);
 		taxes=this.getTaxes();
 		System.out.println("TAXES:"+taxes);
-		float vipEnabled=0;
-		float totalEnabled=0;
-		float totalDisabled=0;
 		float vipActive=0;
 		float taxInactive=0;
 		for(int i=0;i<items.size();i++){
@@ -186,7 +191,7 @@ public class InvoiceFM01 implements Invoice{
 	}
 
 	public float getTotalValue(){
-		return totalValue;
+		return roundTo6(totalValue);
 	}
 	/*public InvoiceFM01(Client client, Seller seller, Shopman shopman,
 			List<InvoiceItem> items, InvoiceMetaData metaData,
@@ -232,9 +237,9 @@ public class InvoiceFM01 implements Invoice{
 	}
 	
 	@Override
-	public String getSerial() {
+	public long getSerial() {
 		// TODO Auto-generated method stub
-		return null;
+		return serial;
 	}
 
 	public Long getId() {
@@ -435,13 +440,19 @@ public class InvoiceFM01 implements Invoice{
 		if(index<0|index>=size())throw new IndexOutOfBoundsException(index+" index must be 0-"+(size()-1));
 		float unit$=items.get(index).getUnitPrice();
 		if(metaData.getInvoiceType()==Invoice.INVOICE_TYPE_TAXES_APLY)unit$=items.get(index).getUnitPrice()/TAXES_APPLY;
-		return unit$;
+		return roundTo6(unit$);
 	}
 
 	@Override
 	public float getTotalPrice(int index)throws IndexOutOfBoundsException{
 		if(index<0|index>=size())throw new IndexOutOfBoundsException(index+" index must be 0-"+(size()-1));
-		return items.get(index).getQuantity()*getUnitPrice(index);
+		return roundTo6(items.get(index).getQuantity()*getUnitPrice(index));
+	}
+	
+	public float roundTo6(float f){
+		BigDecimal big = new BigDecimal(f);
+		big = big.setScale(6, RoundingMode.HALF_UP);
+		return big.floatValue();
 	}
 
 	@Override
@@ -465,12 +476,13 @@ public class InvoiceFM01 implements Invoice{
 		for(int i=0;i<items.size();i++){
 			subt+=getTotalPrice(i);
 		}
-		return subt;
+		return roundTo6(subt);
 	}
 
 	@Override
 	public float getTotal() {
-		return getSubtotal()+getTaxes();
+		
+		return roundTo6(getSubtotal()+getTaxes());//(float)(getSubtotal()+getTaxes());
 	}
 	
 	public float getTotalForConsummerType(int consummerType){
@@ -497,7 +509,7 @@ public class InvoiceFM01 implements Invoice{
 	public float getTaxes() {
 		float subt=getSubtotal();
 		if(metaData.getInvoiceType()==Invoice.INVOICE_TYPE_TAXES_APLY){
-			return subt*TAXES_APPLY-subt;
+			return roundTo6(subt*TAXES_APPLY-subt);//subt*TAXES_APPLY-subt;
 		}
 		else return 0;
 	}
@@ -695,6 +707,22 @@ public class InvoiceFM01 implements Invoice{
 	@Override
 	public Client getPrintedTo() {
 		return printedTo;
+	}
+	@Override
+	public InvoiceElectronicVersion getElectronicVersion() {
+		return electronicVersion;
+	}
+	@Override
+	public void setElectronicVersion(InvoiceElectronicVersion electronicVersion) {
+		this.electronicVersion = electronicVersion;
+	}
+	@Override
+	public boolean hasElectronicVersion() {
+		return hasElectronicVersion;
+	}
+	@Override
+	public void setHasElectronicVersion(boolean hasElectronicVersion) {
+		this.hasElectronicVersion = hasElectronicVersion;
 	}
 	
 	

@@ -35,6 +35,7 @@ public interface Invoice {
 	public String getCp();
 	
 	public String getCreationDate();
+	public long getCreationTime();
 	@Deprecated
 	public String getEmail();
 	@Deprecated
@@ -82,7 +83,7 @@ public interface Invoice {
 	
 	public float getTaxesApply();
 	
-	public String getSerial();
+	public long getSerial();
 	
 	public void setSerial();
 	
@@ -139,5 +140,13 @@ public interface Invoice {
 	public float getAgentPayment();
 
 	public void setAgentPayment(float agentPayment);
+
+	public InvoiceElectronicVersion getElectronicVersion();
+
+	public void setElectronicVersion(InvoiceElectronicVersion electronicVersion);
+
+	public boolean hasElectronicVersion();
+
+	public void setHasElectronicVersion(boolean hasElectronicVersion);
 
 }

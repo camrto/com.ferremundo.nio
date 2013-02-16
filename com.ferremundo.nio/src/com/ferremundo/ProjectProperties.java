@@ -1,5 +1,5 @@
 package com.ferremundo;
-
+/*
 public class ProjectProperties {
 	
 	public static final String META_INF="/opt/workspace/com.ferremundo.nio/WebContent/";
@@ -10,3 +10,4 @@ public class ProjectProperties {
 	
 
 }
+*/

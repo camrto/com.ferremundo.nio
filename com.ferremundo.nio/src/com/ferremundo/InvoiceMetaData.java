@@ -30,7 +30,7 @@ public class InvoiceMetaData {
 		this.invoiceType=invoiceType;
 		this.date=new Date().getTime()+"";
 		int count=new Mongoi().doIncrement(Mongoi.REFERENCE, "{ \"reference\" : \"unique\" }", "count");
-		this.reference=Integer.toString(count,Character.MAX_RADIX).toUpperCase();
+		this.reference=(count+"").toUpperCase();//Integer.toString(count,Character.MAX_RADIX).toUpperCase();
 		serial=0;
 	}
 	

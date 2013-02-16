@@ -1,6 +1,7 @@
 package com.ferremundo;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,14 +21,22 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
+import mx.nafiux.Rhino;
+
+import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Mongoi;
 import com.ferremundo.mailing.HotmailSend;
+import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.DBObject;
@@ -291,7 +300,6 @@ public class Wishing extends HttpServlet {
 							invoice.setFacturedTo(client);
 							invoice.setPrintedTo(client);
 							invoice.persist();
-							
 						}
 						else {
 							invoice.setFacturedTo(agent);
@@ -300,14 +308,91 @@ public class Wishing extends HttpServlet {
 							invoice.persist();
 						}
 						
-						TheBox.instance().plus(invoice.getTotal());
-						TheBox.instance().addLog(new TheBoxLog(
-								invoice.getTotal(), 
-								paymentLog.getDate(),
-								invoice.getReference(),
-								LogKind.PAYMENT.toString(),
-								onlineClient.getShopman().getLogin()
-								));
+						//DBObject dbo=new Mongoi().doFindOne(Mongoi.INVOICES, "{ \"reference\" : \""+invoice.getReference()+"\"}");
+						//InvoiceFM01 fm01=new Gson().fromJson(dbo.toString(), InvoiceFM01.class);
+						//System.out.println("generating electronic version of -> \n"+new Gson().toJson(fm01));
+						//ElectronicInvoiceGenerator test= new ElectronicInvoiceGenerator(fm01);
+						//Rhino rhino=test.inflateRhino(fm01);
+						
+						String cfdiResponse=RhinoGen.gen(invoice);
+						//ElectronicInvoiceGenerator generator=new ElectronicInvoiceGenerator(fm01);
+						//String cfdiResponse=generator.create();
+						//System.out.println("response from server "+cfdiResponse);
+						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+						DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+						Document doc = dBuilder.parse(new ByteArrayInputStream(cfdiResponse.getBytes()));
+						NodeList nlist=doc.getElementsByTagName("codigo");
+						
+						if(nlist.item(0).getTextContent().equals("0")){
+							String xml=doc.getElementsByTagName("xmlretorno").item(0).getTextContent();
+							String pdfUrl=doc.getElementsByTagName("urlpdf").item(0).getTextContent();
+							String xmlUrl=doc.getElementsByTagName("urlxml").item(0).getTextContent();
+							InvoiceElectronicVersion electronicVersion=new 
+									InvoiceElectronicVersion(
+									StringEscapeUtils.unescapeXml(xml),
+									"",xmlUrl,"",pdfUrl
+									);
+							//TODO HARDCODED HERE
+							String pdf=GSettings.get("TMP_FOLDER")+invoice.getReference()+".pdf";
+							JGet.download(pdfUrl,pdf);
+							JGet.stringTofile(
+									StringEscapeUtils.unescapeXml(xml),
+									GSettings.get("TMP_FOLDER")+invoice.getReference()+".xml");
+							new Mongoi().doUpdate(
+									Mongoi.INVOICES, 
+									"{ \"reference\" : \""+invoice.getReference()+"\" }",
+									"{ \"electronicVersion\" : "+new Gson().toJson(electronicVersion)+" }");
+							new Mongoi().doUpdate(
+									Mongoi.INVOICES, 
+									"{ \"reference\" : \""+invoice.getReference()+"\" }",
+									"{ \"hasElectronicVersion\" : true }"
+									);
+							//TODO has parse de mails please
+							if(!invoice.getClient().getEmail().equals("")){
+								HotmailSend.send(
+									"factura "+invoice.getReference()+" $"+((double)Math.round(invoice.getTotal() * 100000) / 100000),
+									"FERREMUNDO AGRADECE SU PREFERENCIA",
+									invoice.getClient().getEmail().split(" "),
+									new String[]{
+										GSettings.get("TMP_FOLDER")+invoice.getReference()+".xml",
+										GSettings.get("TMP_FOLDER")+invoice.getReference()+".pdf"},
+									new String[]{invoice.getReference()+".xml",invoice.getReference()+".pdf"}
+									);
+							}
+							if(!invoice.getAgent().getEmail().equals("")){
+								HotmailSend.send(
+									"factura "+invoice.getReference()+" $"+((double)Math.round(invoice.getTotal() * 100000) / 100000),
+									"FERREMUNDO AGRADECE SU PREFERENCIA",
+									invoice.getAgent().getEmail().split(" "),
+									new String[]{
+										GSettings.get("TMP_FOLDER")+invoice.getReference()+".xml",
+										GSettings.get("TMP_FOLDER")+invoice.getReference()+".pdf"},
+									new String[]{invoice.getReference()+".xml",invoice.getReference()+".pdf"}
+									);
+							}
+							//TODO print this electronic representation to lazer or whatever
+							response.getWriter().print(
+									"{ \"invoice\" : "+new Gson().toJson(invoice)+
+									", \"successResponse\" : \"facturado\"}");
+							TheBox.instance().plus(invoice.getTotal());
+							TheBox.instance().addLog(new TheBoxLog(
+									invoice.getTotal(), 
+									paymentLog.getDate(),
+									invoice.getReference(),
+									LogKind.PAYMENT.toString(),
+									onlineClient.getShopman().getLogin()
+									));
+							return;
+						}
+						else{
+							//TODO has que esta piñates te diga el mensage
+							System.out.println("ERROR - El servidor de facturacion dijo: codigo "+nlist.item(0).getTextContent()+" - mensaje "+doc.getElementsByTagName("mensaje").item(0).getTextContent());
+							response.sendError(response.SC_SERVICE_UNAVAILABLE,"los servidores estan caidos");
+							response.getWriter().print("{\"failed\":\"true\"}");
+							return;
+						}
+						//nlist.item(0).
+						
 					}
 					
 					if(invoice.getAgentPayment()==0){
@@ -319,7 +404,7 @@ public class Wishing extends HttpServlet {
 					try{
 						  // Create file
 						//HARD CODED HERE, write to *pdf.csv 
-						String path=(command.equals("f"))?"/home/dios/FERREMUNDO/facturas/":"/home/dios/FERREMUNDO/pedidos/";
+						String path="/home/dios/FERREMUNDO/pedidos/";
 						path+=invoice.getReference()+".pdf.csv";
 						csv=path;
 						FileWriter fstream = new FileWriter(path);
@@ -341,7 +426,7 @@ public class Wishing extends HttpServlet {
 					String[] paths=new String[invoices.length+1];
 					String[] fileNames=new String[invoices.length+1];
 					for(int i=0;i<invoices.length;i++){
-						String pathname=ProjectProperties.TMP_DIR+invoices[i].getReference()+"."+i;
+						String pathname=GSettings.get("TMP_FOLDER")+invoices[i].getReference()+"."+i;
 						File pdf= new PDF(invoices[i], pathname).make();
 						//System.out.println("invoices["+i+"]: "+invoices[i].toJson());
 						//TODO this is printing time

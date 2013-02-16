@@ -3,6 +3,8 @@ package com.ferremundo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.ibm.icu.text.DecimalFormat;
+
 public class InvoiceItem extends Product{
 	
 	private float quantity;
@@ -57,13 +59,14 @@ public class InvoiceItem extends Product{
 	}
 	
 	public float getQuantity(){
-		return quantity;
+		return roundTo6(quantity);
 	}
 	
 	
 	public float getTotal(){
-		return super.getUnitPrice()*quantity;
+		return roundTo6(super.getUnitPrice()*quantity);
 	}
+	
 	/*public String toJson() {
 		String json="{"+
 		"\"quantity\":\""+this.quantity+"\","+

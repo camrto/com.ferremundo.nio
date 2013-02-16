@@ -1,6 +1,8 @@
 package com.ferremundo;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -9,13 +11,36 @@ import java.util.LinkedList;
 import java.util.Vector;
 
 import javax.persistence.EntityManager;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.ferremundo.gth.InvoiceRow;
+import com.ibm.icu.text.DecimalFormat;
 import com.lowagie.text.Rectangle;
 
 public class tst {
 
 	public static void main(String[] args) {
+		double myDouble = 2.673;
+		DecimalFormat myFormat = new DecimalFormat("0.000000");
+		String myDoubleString = myFormat.format(myDouble);
+		System.out.println("My number is: " + myDoubleString);
+	}
+	public static void main1(String[] args) throws ParserConfigurationException, SAXException, IOException {
+		String cfdiResponse="<xml><codigo>0</codigo><str>&lt;merga&gt;</str></xml>";
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(new ByteArrayInputStream(cfdiResponse.getBytes()));
+		NodeList nlist=doc.getElementsByTagName("str");
+		System.out.println(StringEscapeUtils.unescapeXml(nlist.item(0).getTextContent()));
+	}
+	private void meth(){
 		File dir=new File("/home/dog/FERREMUNDO/pedidos/");
 		String[] children = dir.list();
 		if (children == null) {
