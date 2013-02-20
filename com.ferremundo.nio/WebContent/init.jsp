@@ -587,6 +587,7 @@ $(document).ready(function(){
 			if(commandline.args.length>=1){
 				
 				if(!confirm("cancelar documento "+ commandline.args[0]+ " ? "))return;
+				$.blockUI({ message: '<h1><img src="img/wait.gif" /> cancelando...</h1>' });
 				$.ajax({
 					url: 'invoicecancelling',
 					data: {
@@ -598,9 +599,11 @@ $(document).ready(function(){
 					},
 					success: function(data){
 						alert(data.message);
+						$.unblockUI();
 					},
 					error : function(jqXHR, textStatus, errorThrown){
-						alert(jqXHR.responseText);
+						alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
+						$.unblockUI();
 					},
 					dataType:"json",
 					type:'POST'
@@ -667,6 +670,7 @@ $(document).ready(function(){
 		}
 		else if(commandline.kind=='getinvoice'){
 			if(commandline.args.length>=1){
+				$.blockUI({ message: '<h1><img src="img/wait.gif" /></h1>' });
 				$.ajax({
 					url: 'getinvoice',
 					type:'POST',
@@ -677,6 +681,7 @@ $(document).ready(function(){
     					clientReference: CLIENT_REFERENCE
 					},
 					success: function(data){
+						$.unblockUI();
 						if(commandline.command=='@r'){
 							var itms=data.items;
 							for(var i=itms.length-1; i>=0;i--){
