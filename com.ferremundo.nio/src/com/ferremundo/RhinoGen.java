@@ -58,7 +58,9 @@ public class RhinoGen {
 				//rhino.generarDatosUbicacion("MEXICO")
 				rhino.generarDatosUbicacion(c.getCountry(), c.getState(), c.getCity(), c.getSuburb(), c.getAddress(), c.getExteriorNumber(), c.getInteriorNumber(), c.getCp(), c.getLocality())
 				);
-		
+		String taxesKind=g.getKey("TAXES_IVA_NAME");
+		String taxesRate=g.getKey("TAXES_IVA_VALUE");
+		rhino.setTraslado(taxesKind, taxesRate, invoice.getTaxes()+"");
 		List<InvoiceItem> items=invoice.getItems();
 		for(InvoiceItem item : items){
 			rhino.agregaConcepto(

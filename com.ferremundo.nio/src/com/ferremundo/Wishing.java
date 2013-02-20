@@ -404,7 +404,7 @@ public class Wishing extends HttpServlet {
 					try{
 						  // Create file
 						//HARD CODED HERE, write to *pdf.csv 
-						String path="/home/dios/FERREMUNDO/pedidos/";
+						String path=GSettings.get("TMP_FOLDER");
 						path+=invoice.getReference()+".pdf.csv";
 						csv=path;
 						FileWriter fstream = new FileWriter(path);
@@ -430,7 +430,7 @@ public class Wishing extends HttpServlet {
 						File pdf= new PDF(invoices[i], pathname).make();
 						//System.out.println("invoices["+i+"]: "+invoices[i].toJson());
 						//TODO this is printing time
-						//new PrinterFM01(pdf, PrinterFM01.PRINTER_ONE).print();
+						new PrinterFM01(pdf, PrinterFM01.PRINTER_ONE).print();
 						paths[i]=pathname;
 						fileNames[i]=pdf.getName()+".pdf";
 						//emis.persist(invoices[i]);

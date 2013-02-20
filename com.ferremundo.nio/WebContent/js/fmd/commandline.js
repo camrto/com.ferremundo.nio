@@ -61,6 +61,16 @@
 			this.getFromDB=true;
 			$('#commands').HideBubblePopup();
 		}
+		else if(this.command=='pa'){
+			this.kind ='agentstate';
+			this.getFromDB=true;
+			$('#commands').HideBubblePopup();
+		}
+		else if(this.command=='pc'){
+			this.kind ='clientstate';
+			this.getFromDB=true;
+			$('#commands').HideBubblePopup();
+		}
 		else if(this.command=='ah'){
 			this.kind ='agenthistory';
 			/*for(var i=1;i<splited.length;i++)if(splited[i]!=""){

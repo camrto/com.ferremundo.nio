@@ -55,7 +55,7 @@ public class InvoiceCancelling extends HttpServlet{
 			String[] argsspl=null;
 			if(!args.equals("")){
 				argsspl=args.split(" ");
-				if(argsspl.length>=3){
+				if(argsspl.length==1){
 					invoiceREF=argsspl[0].toUpperCase();
 					oInvoice=new Mongoi().doFindOne(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\" }");
 					if(oInvoice==null){
@@ -81,7 +81,7 @@ public class InvoiceCancelling extends HttpServlet{
 						    Node node=document.getElementsByTagName("tfd:TimbreFiscalDigital").item(0);
 						    Element e=(Element)node;
 						    String uuid=e.getAttribute("UUID");
-						    
+						    System.out.println("UUID:"+uuid);
 							GSettings g=GSettings.instance();
 							Rhino rhino= new Rhino(
 									g.getKey("CERTIFICATE"),
@@ -94,7 +94,7 @@ public class InvoiceCancelling extends HttpServlet{
 							document = builder.parse(new ByteArrayInputStream(cancel.getBytes()));
 							NodeList nlist=document.getElementsByTagName("codigo");
 							System.out.println("CANCEL RESPONSE: "+cancel);
-							if(nlist.item(0).getTextContent().equals("0")){
+							if(nlist.item(0).getTextContent().equals("0")||nlist.item(0).getTextContent().equals("-5")){
 								String xml=document.getElementsByTagName("xmlretorno").item(0).getTextContent();
 								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.cancelXml\" : \""+StringEscapeUtils.unescapeXml(xml)+"\"}");
 								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.active\" : false }");
@@ -104,23 +104,24 @@ public class InvoiceCancelling extends HttpServlet{
 								if(!invoice.getClient().getEmail().equals("")){
 									HotmailSend.send(
 										"factura CANCELADA "+invoice.getReference(),
-										"FERREMUNDO AGRADECE SU PREFERENCIA",
-										invoice.getClient().getEmail().split(" "),
+										"la factura con folio fiscal \n"+uuid+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
+										invoice.getClient().getEmail().split(" ")/*,
 										new String[]{
 											GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
 										new String[]{invoice.getReference()+"-CANCELADO.xml"}
-										
+										*/
 										);
 									
 								}
 								if(!invoice.getAgent().getEmail().equals("")){
 									HotmailSend.send(
 											"factura CANCELADA "+invoice.getReference(),
-											"FERREMUNDO AGRADECE SU PREFERENCIA",
-											invoice.getAgent().getEmail().split(" "),
+											"la factura con folio fiscal \n"+uuid+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
+											invoice.getAgent().getEmail().split(" ")/*,
 											new String[]{
 												GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
 											new String[]{invoice.getReference()+"-CANCELADO.xml"}
+											*/
 											
 											);
 								}
@@ -154,6 +155,7 @@ public class InvoiceCancelling extends HttpServlet{
 						return;
 					}
 					else {
+						System.out.println("error al intentar cancelar documento");
 						response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
 						response.getWriter().write(invoice.attemptToLog(LogKind.CANCEL).getMessage());
 						return;
@@ -161,7 +163,7 @@ public class InvoiceCancelling extends HttpServlet{
 				}
 				else{
 					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-					response.getWriter().write("");
+					response.getWriter().write("numero de parametros incorrecto, especifica la referencia de un solo documento");
 					return;
 				}
 			

@@ -25,7 +25,9 @@ public class HotmailSend {
 	public static void main(String[] args) {
 		//send("Cotización 3WA3 : 2.97", "FERREMUNDO AGRADECE SU PREFERENCIA", new String[]{"raynmune@hotmail.com"}, new String[]{"/opt/workspace/tmp/3WA3.0","/home/dios/FERREMUNDO/pedidos/3WA3.pdf.csv"}, new String[]{"3WA3.0.pdf","3WA3.csv"});
 	}
-	
+	public static boolean send( String subject, String text,String[] recipients) {
+		return send(subject, text, recipients, null, null);
+	}
 	public static boolean send( String subject, String text,String[] recipients, String[] paths, String[] fileNames) {
 		List<String> mails=new LinkedList<String>();
 		for(String recipient : recipients){
@@ -57,8 +59,10 @@ public class HotmailSend {
 			message.setText(text);
 			
 			Multipart multipart = new MimeMultipart();
-			for(int i=0;i<paths.length;i++){
-				addAttachment(multipart, paths[i],fileNames[i]);
+			if(paths!=null&&fileNames!=null){
+				for(int i=0;i<paths.length;i++){
+					addAttachment(multipart, paths[i],fileNames[i]);
+				}
 			}
 			BodyPart messageBodyPart = new MimeBodyPart();
 			messageBodyPart.setText(text);
