@@ -853,7 +853,7 @@ $(document).ready(function(){
 					    var dd = pdd.getDate();
 					    var yyyy = pdd.getFullYear();
 					    var date = yyyy+'.'+mm + '.' + dd;
-						var src=date+" | "+r.text;
+						var src=r.id+" | "+date+" | "+r.text;
 						nodeLog(src,"#records","box fleft");
 						
 					},
