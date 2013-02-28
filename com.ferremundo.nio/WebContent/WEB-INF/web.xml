@@ -33,6 +33,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	</servlet-mapping>
 	
 	<servlet>
+		<servlet-name>dbport</servlet-name>
+		<servlet-class>com.ferremundo.DBPort</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>dbport</servlet-name>
+		<url-pattern>/dbport</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
 		<servlet-name>invoiceport</servlet-name>
 		<servlet-class>com.ferremundo.InvoicePort</servlet-class>
 	</servlet>
