@@ -20,7 +20,7 @@ autocomplete=function(input){
 			var args="";
 			for(var i=0;i<commandline.args.length;i++)args+=commandline.args[i]+(i==(commandline.args.length-1)?"":" ");
 			if(commandline.getFromDB){
-				if(commandline.kind=='client'||commandline.kind=='agent'||commandline.kind=='product'||commandline.kind=='agenthistory'){
+				if(commandline.kind=='client'||commandline.kind=='agent'||commandline.kind=='product'||commandline.kind=='agentstatus'||commandline.kind=='clientstatus'){
 					if(commandline.args.length<1)return;
 				}
 				//alert(commandline.command);
@@ -55,7 +55,7 @@ autocomplete=function(input){
 								};
 							}));
 						}
-						else if(commandline.kind=='client'||commandline.kind=='agent'||commandline.kind=='agenthistory'){
+						else if(commandline.kind=='client'||commandline.kind=='agent'||commandline.kind=='agentstatus'||commandline.kind=='clientstatus'){
 							clients=data.clients;
 							response($.map(data.clients, function(item) {
 								return {
@@ -87,13 +87,17 @@ autocomplete=function(input){
 				
 				//alert(productsLog[i].key);
 			}
-			else if(commandline.kind=='agenthistory'){
+			else if(commandline.kind=='agentstatus'||commandline.kind=='clientstatus'){
+				var where="";
+				if(commandline.kind=='agentstatus')where='agents';
+				else if(commandline.kind=='clientstatus')where='clients';
+				$("#resultset").prepend("<img src=img/wait.gif width=70px height=70px/>");
 				$.ajax({
 					index : j,
 					type:'POST',
 					url: "clienthistory",
 					data: {
-						where:'agents',
+						where:where,
 						hash:clients[i].code,
 						token : TOKEN,
     					clientReference: CLIENT_REFERENCE
@@ -103,8 +107,15 @@ autocomplete=function(input){
 						alert(textStatus);
 					},
 					success: function(data) {
+						$('#resultset').empty();
 						console.log('data');
 						console.log(data);
+						for(var index=0;index<data.invoices.length;index++){
+							var invoice=data.invoices[index];
+							
+							invoiceInfoLog(invoice,'#resultset');
+						}
+						$("#resultset").append("-- FIN DE BUSQUEDA --");
 					}
 				});
 			}
@@ -257,7 +268,7 @@ autocomplete=function(input){
 					i++;
 				});
 			}
-			else if(commandline.kind=='client'||commandline.kind=='agent'||commandline.kind=='agenthistory'){
+			else if(commandline.kind=='client'||commandline.kind=='agent'||commandline.kind=='agentstatus'||commandline.kind=='clientstatus'){
 				var i=0;
 				$('li>a.ui-corner-all').each(function(){
 					var c=clients;

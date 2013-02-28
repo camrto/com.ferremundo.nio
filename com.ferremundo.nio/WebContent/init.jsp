@@ -124,6 +124,7 @@ $(document).ready(function(){
 		},
         close: function(){
 			if(!AUTHORIZED)$('#login-form').dialog('open');
+			else resetClient();
 			$('#login-form').dialog("option",'hide','explode');
         }
     });
@@ -289,8 +290,9 @@ $(document).ready(function(){
 	});
 	
 
-	resetClient();
+	
 	authenticate();
+	//resetClient();
 	///INIT
 
 	$("#log").sexytable({
@@ -818,6 +820,7 @@ $(document).ready(function(){
 							.capsule(data.invoices[i].items,'com.ferremundo.cps.TB').addClass(i%2!=0?'odd':'even')
 							.precapsule(consummerObj,'com.ferremundo.cps.GenericDiv');
 						}
+						$("#resultset").append("-- FIN DE BUSQUEDA --");
 						
 					},
 					dataType:"json",
@@ -826,6 +829,67 @@ $(document).ready(function(){
 					}
 				});
 			}
+		}
+		else if(commandline.kind=='makerecord'){
+			if(commandline.args.length>=1){
+				commandline.args[commandline.args.length-1]=commandline.args[commandline.args.length-1].replace(/\./g,'');
+				
+				$.ajax({
+					url: 'dbport',
+					type:'POST',
+					data: {
+						command:commandline.command,
+						args: commandline.args.join(" "),
+						requestNumber: REQUEST_NUMBER,
+						consummerType: client?client.consummerType:1,
+						token : TOKEN,
+						clientReference: CLIENT_REFERENCE
+					},
+					success: function(data){
+						//alert(data.message);
+						var r=data.record;
+						var pdd = new Date(r.creationTime);
+					    var mm = pdd.getMonth() + 1;
+					    var dd = pdd.getDate();
+					    var yyyy = pdd.getFullYear();
+					    var date = yyyy+'.'+mm + '.' + dd;
+						var src=date+" | "+r.text;
+						nodeLog(src,"#records","box fleft");
+						
+					},
+					error : function(jqXHR, textStatus, errorThrown){
+						alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
+					}
+				});
+				$('#commands').val('');
+			}
+			else alert("escribe algo para recordar");
+		}
+		else if(commandline.kind=='deactivaterecord'){
+			if(commandline.args.length>=1){
+				commandline.args[commandline.args.length-1]=commandline.args[commandline.args.length-1].replace(/\./g,'');
+				
+				$.ajax({
+					url: 'dbport',
+					type:'POST',
+					data: {
+						command:commandline.command,
+						args: commandline.args.join(" "),
+						requestNumber: REQUEST_NUMBER,
+						consummerType: client?client.consummerType:1,
+						token : TOKEN,
+						clientReference: CLIENT_REFERENCE
+					},
+					success: function(data){
+						alert("HECHO :"+data.record.text);
+					},
+					error : function(jqXHR, textStatus, errorThrown){
+						alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
+					}
+				});
+				$('#commands').val('');
+			}
+			else alert("escribe algo para recordar");
 		}
 	});
 
@@ -1322,8 +1386,9 @@ $(document).ready(function(){
 
 <div style="position: relative; width: 100%">
 <div id="log" style="height: 500px; width: 100%; overflow: auto;" class="ui-widget-content"></div>
-
+<div id="records"></div>
 </div>
+
 <div id="resultset" style="width: 100%;" class=""></div>
 <div id="logResultset" style="width: 100%;" class=""></div>
 

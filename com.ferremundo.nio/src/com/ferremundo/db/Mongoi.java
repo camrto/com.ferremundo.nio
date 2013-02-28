@@ -11,9 +11,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.naming.resources.BaseDirContext;
+import org.bson.BSONObject;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -53,6 +56,9 @@ public class Mongoi {
 	
 	public static final String SHOPMANS="shopmans";
 	public static final String SHOPMANS_COUNTER="shopmanscounter";
+	
+	public static final String TEMPORAL_RECORDS="temporalrecords";
+	public static final String TEMPORAL_RECORDS_COUNTER="temporalrecordscounter";
 	
 	public static final String PRODUCTS="products";
 	public static final String PRODUCTS_COUNTER = "productscounter";
@@ -97,6 +103,7 @@ public class Mongoi {
 			try {
 				mongo = new Mongo(HOST,new Integer(PORT));
 				db = mongo.getDB(GLOBAL_DB);
+				
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -106,6 +113,18 @@ public class Mongoi {
 			}
 		}
 		
+	}
+	
+	public DBCursor doFindFieldsMatches(String where, String[] fields, Object[] patterns){
+		ArrayList<DBObject> and=new ArrayList<DBObject>();
+		for(int i=0;i<fields.length;i++){
+			and.add(new BasicDBObject(fields[i],patterns[i]));
+			
+		}
+		DBObject query=new BasicDBObject("$and",and);
+		DBCollection collection=db.getCollection(where);
+		DBCursor cursor=collection.find(query);
+		return cursor;
 	}
 	
 	public 	DBCursor doFindThisThen(int mode, String where, String[] thisFields, String[] thenFields, String[] patterns){
@@ -222,6 +241,11 @@ public class Mongoi {
 		DBCollection collection = db.getCollection(where);
 		DBObject dbObject=(DBObject)JSON.parse(json);
 		collection.insert(dbObject);
+	}
+	
+	public void doInsert(String where, Object src) {
+		String json=new Gson().toJson(src);
+		doInsert(where, json);
 	}
 	
 	public void doUpdate(String where, String matches, String json) {
@@ -382,12 +406,30 @@ public class Mongoi {
 		}*/
 	}
 	public static void main(String[] args) {
+	/*
 		DBObject dbObject=new Mongoi().doFindOne(INVOICES, "{\"reference\" : \"43RF\"}");
-		System.out.println(dbObject);
 		
+		System.out.println(dbObject);
+		try {
+			Mongo mongo=new Mongo("localhost", 27017);
+			DB db=mongo.getDB("globaldb");
+			db.addUser("ray", "alaverga".toCharArray());
+			
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MongoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Mongoi m=new Mongoi();
+		m.getDB().addUser("ray", "alaverga".toCharArray());
+		*/
 		
 	}
-	
+	public DB getDB(){
+		return db;
+	}
 	/**WARNING: execute this method once for each project... this is here temporarily*/
 	private static void doSetFMDBase(){
 		/*Mongo mongo = null;
@@ -399,6 +441,12 @@ public class Mongoi {
 			e.printStackTrace();
 		}
 		DB db = mongo.getDB(Mongoi.GLOBAL_DB);*/
+		new Mongoi().getCollection(TEMPORAL_RECORDS).ensureIndex(new BasicDBObject("login", 1));
+		new Mongoi().getCollection(TEMPORAL_RECORDS).ensureIndex(new BasicDBObject("todo", 1));
+		new Mongoi().getCollection(TEMPORAL_RECORDS).ensureIndex(new BasicDBObject("id", 1), new BasicDBObject("unique", true));
+		
+		new Mongoi().getCollection(TEMPORAL_RECORDS_COUNTER).ensureIndex(new BasicDBObject("unique", 1), new BasicDBObject("unique", true));
+		new Mongoi().doInsert(TEMPORAL_RECORDS_COUNTER, "{ \"unique\" : \"unique\" , \"id\" : 0}");
 		
 		DBCollection clientsCollection=new Mongoi().getCollection(Mongoi.CLIENTS);
 		clientsCollection.ensureIndex(new BasicDBObject("code", 1), new BasicDBObject("unique", true));
@@ -457,7 +505,13 @@ public class Mongoi {
 	}
 	
 	public List<DBObject> doFindAgentHistory(String code,int size, int page){
-		DBCursor cursor=doFindMatches(INVOICES, "agent.code", code).sort(new BasicDBObject("$natural",-1));
+		return doFindHistory(code, "agent.code", size, page);
+	}
+	public List<DBObject> doFindClientHistory(String code,int size, int page){
+		return doFindHistory(code, "client.code", size, page);
+	}
+	public List<DBObject> doFindHistory(String code,String where,int size, int page){
+		DBCursor cursor=doFindMatches(INVOICES, where, code).sort(new BasicDBObject("reference",1));
 		//System.out.println("cursor="+new Gson().toJson(cursor));
 		List<DBObject> list=new LinkedList<DBObject>();
 		int i=0;

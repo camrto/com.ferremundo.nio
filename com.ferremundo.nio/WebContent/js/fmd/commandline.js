@@ -61,29 +61,16 @@
 			this.getFromDB=true;
 			$('#commands').HideBubblePopup();
 		}
-		else if(this.command=='pa'){
-			this.kind ='agentstate';
+		else if(this.command=='ha'){
+			this.kind ='agentstatus';
 			this.getFromDB=true;
 			$('#commands').HideBubblePopup();
 		}
-		else if(this.command=='pc'){
-			this.kind ='clientstate';
+		else if(this.command=='hc'){
+			this.kind ='clientstatus';
 			this.getFromDB=true;
 			$('#commands').HideBubblePopup();
 		}
-		else if(this.command=='ah'){
-			this.kind ='agenthistory';
-			/*for(var i=1;i<splited.length;i++)if(splited[i]!=""){
-				this.args[i-1]=splited[i];
-				this.argssize++;
-			}
-			if(this.argssize>=1)this.getFromDB=true;
-			this.pargs=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);
-			this.pargs.splice(0,1);
-			*/
-			this.getFromDB=true;
-		}
-		
 		else if(this.command=='@ic'||this.command=='@ia'||
 				this.command=='@oc'||this.command=='@oa'||
 				this.command=='$fc'||this.command=='$fa'||
@@ -146,6 +133,18 @@
 				$('#commands').ShowBubblePopup( {innerHtml: 'mostrar estatus de documento <b>'+this.args[0]+'</b>'} );
 			}
 			this.kind="getinvoice";
+		}
+		else if(this.command=='@rc'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'escribe tu recordatorio'} );
+			this.kind="makerecord";
+		}
+		else if(this.command=='@rr'){
+			$('#commands').ShowBubblePopup( {innerHtml: '<enter> mostrar recordatorios. <espacio> n mostrar ultimos n recordatorios'} );
+			this.kind="returnrecords";
+		}
+		else if(this.command=='@rb'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'marcar recordatorio como hecho'} );
+			this.kind="deactivaterecord";
 		}
 		else if(this.command=='$a'||this.command=='$d'){
 			if(this.command=='$a')

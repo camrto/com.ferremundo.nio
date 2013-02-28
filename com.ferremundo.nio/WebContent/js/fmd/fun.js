@@ -251,7 +251,7 @@ function setCaretToPos (input, pos) {
 
 
 
-invoiceInfoLog=function(invoice){
+invoiceInfoLog=function(invoice,node){
 	var i=invoice;
 	console.log(invoice);
 	var agentPayed=false;
@@ -307,23 +307,35 @@ invoiceInfoLog=function(invoice){
 	var pastDued=new Date().getTime()>=pastDue;
 	
 	var result="TIPO : "+(i.invoiceType==0?'FACTURA':(i.invoiceType==1?'PEDIDO':'COTIZACION'))+" | "+
-	(canceled?"(CANCELADA)":"")+
-	(closed?"(CERRADA)":"")+
-	"referencia : "+i.reference+" | "+
-	"valor neto : "+i.totalValue+" | "+
-	"total : "+i.total+" | "+
-	"agente : "+i.agent.consummer+" | "+
-	"$agente : $"+i.agentPayment+""+(agentPayed?"(LIQUIDADO)":"(NO LIQUIDADO)")+" | "+
-	"cliente : "+i.client.consummer+" | "+
-	"facturado? : "+(factured?"SI":"NO")+" | "+
-	"adeudo : $"+i.debt+" | "+
-	"vence : "+date+""+(pastDued?"(VENCIDO)":"")+" | "+
-	"atendio : "+i.shopman.login+" | "+
-	theLogs;
+		(canceled?"(CANCELADA)":"")+
+		(closed?"(CERRADA)":"")+
+		"referencia : "+i.reference+" | "+
+		"valor neto : "+i.totalValue+" | "+
+		"total : "+i.total+" | "+
+		"agente : "+i.agent.consummer+" | "+
+		"$agente : $"+i.agentPayment+""+(agentPayed?"(LIQUIDADO)":"(NO LIQUIDADO)")+" | "+
+		"cliente : "+i.client.consummer+" | "+
+		"facturado? : "+(factured?"SI":"NO")+" | "+
+		"adeudo : $"+i.debt+" | "+
+		"vence : "+date+""+(pastDued?"(VENCIDO)":"")+" | "+
+		"atendio : "+i.shopman.login+" | "+
+		theLogs;
 	
 	var consummerObj={content:result};
-	$('#logResultset').preincapsule(consummerObj,'com.ferremundo.cps.GenericDiv').addClass('box fleft');
+	var defaultNode='#logResultset';
+	if(node!=null)defaultNode=node;
+	var pos=$(node).children().length%2==0;
+	var bgcolor=pos?"#ffffff":'#d9d9d9';
+	if(!agentPayed)bgcolor=pos?"#fbff8d":'#dcdf7c';
+	if(i.debt>0)bgcolor=pos?"#FFC2C2":'#d5a2a2';
+	if(agentPayed)bgcolor=pos?"#95ff9a":'#79cf7d';
+	if(i.invoiceType==2)bgcolor=pos?"#ffffff":'#d9d9d9';//COTIZACION
+	
+	$(defaultNode).preincapsule(consummerObj,'com.ferremundo.cps.GenericDiv').addClass('box fleft').css('background-color',bgcolor);
 
+};
+nodeLog=function(src,node,classes){
+	$(node).preincapsule({content:src},'com.ferremundo.cps.GenericDiv').addClass(classes);
 };
 	
 clientauthenticateLP=function () {
@@ -671,6 +683,39 @@ resetClient=function(){
 	onLogChange();
 	$("#commands").val('');
 	$("#commands").focus();
+	$("#records").val('');
+	$.ajax({
+		url: 'dbport',
+		type:'POST',
+		data: {
+			command:"@rr",
+			args: "",
+			requestNumber: REQUEST_NUMBER,
+			consummerType: client?client.consummerType:1,
+			token : TOKEN,
+			clientReference: CLIENT_REFERENCE
+		},
+		success: function(data){
+			//alert(data.message);
+			console.log(data);
+			var rs=data.records;
+			for(var i=0;i<rs.length;i++){
+				var r=rs[i];
+				console.log(r);
+				var pdd = new Date(r.creationTime);
+			    var mm = pdd.getMonth() + 1;
+			    var dd = pdd.getDate();
+			    var yyyy = pdd.getFullYear();
+			    var date = yyyy+'.'+mm + '.' + dd;
+				var src=r.id+" | "+date+" | "+r.text;
+				nodeLog(src,"#records","box fleft");
+			}
+			
+		},
+		error : function(jqXHR, textStatus, errorThrown){
+			alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
+		}
+	});
 	
 };
 
