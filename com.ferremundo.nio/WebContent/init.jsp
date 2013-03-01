@@ -839,7 +839,7 @@ $(document).ready(function(){
 					type:'POST',
 					data: {
 						command:commandline.command,
-						args: commandline.args.join(" "),
+						args: encodeURIComponent(commandline.args.join(" ")),
 						requestNumber: REQUEST_NUMBER,
 						consummerType: client?client.consummerType:1,
 						token : TOKEN,
@@ -853,7 +853,7 @@ $(document).ready(function(){
 					    var dd = pdd.getDate();
 					    var yyyy = pdd.getFullYear();
 					    var date = yyyy+'.'+mm + '.' + dd;
-						var src=r.id+" | "+date+" | "+r.text;
+						var src="<div id=record-"+r.id+">"+r.id+" | "+date+" | "+r.text+"</div>";
 						nodeLog(src,"#records","box fleft");
 						
 					},
@@ -882,6 +882,7 @@ $(document).ready(function(){
 					},
 					success: function(data){
 						alert("HECHO :"+data.record.text);
+						$("#record-"+data.record.id).remove();
 					},
 					error : function(jqXHR, textStatus, errorThrown){
 						alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);

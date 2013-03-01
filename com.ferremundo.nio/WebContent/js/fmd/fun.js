@@ -707,7 +707,7 @@ resetClient=function(){
 			    var dd = pdd.getDate();
 			    var yyyy = pdd.getFullYear();
 			    var date = yyyy+'.'+mm + '.' + dd;
-				var src=r.id+" | "+date+" | "+r.text;
+				var src="<div id=record-"+r.id+">"+r.id+" | "+date+" | "+r.text+"</div>";
 				nodeLog(src,"#records","box fleft");
 			}
 			
