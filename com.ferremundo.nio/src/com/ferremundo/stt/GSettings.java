@@ -1,6 +1,8 @@
 package com.ferremundo.stt;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.InvalidPropertiesFormatException;
@@ -10,14 +12,20 @@ public class GSettings extends Properties{
 
 	private static GSettings gSettings=null;
 	private static Properties properties;//=new Properties();
-	
+	private static String folderBase="/opt/fm";
 	public GSettings(){
 		if(properties==null){
 			String path=
-					File.separator+
-					this.getClass().getName().replace(".",File.separator)+
+					folderBase+File.separator+
+					//this.getClass().getName().replace(".",File.separator)+
+					this.getClass().getName()+
 					".xml";
-			InputStream is=this.getClass().getResourceAsStream(path);
+			InputStream is=null;
+			try {
+				is = new FileInputStream(path);
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
 			System.out.println(path);
 			try {
 				this.loadFromXML(is);
@@ -60,5 +68,8 @@ public class GSettings extends Properties{
 			gSettings=new GSettings();
 		}
 		return gSettings.getKey(key);
+	}
+	public static void main(String[] args) {
+		System.out.println(GSettings.get("TMP_FOLDER"));
 	}
 }

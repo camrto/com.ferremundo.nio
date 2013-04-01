@@ -1,39 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<!--  files and folders -->
-<entry key="TMP_FOLDER">/opt/fm/tmp/</entry>
+	<!-- files and folders -->
+	<entry key="TMP_FOLDER"></entry>
 
-<!--  Mongo settings -->
-<entry key="MONGO_DB_HOST">localhost</entry>
-<entry key="MONGO_DB_PORT">27000</entry>
-<entry key="SPREADSHEET_DB_FILE">/opt/fm/DB.ods</entry>
+	<!-- Mongo settings -->
+	<entry key="MONGO_DB_HOST"></entry>
+	<entry key="MONGO_DB_PORT"></entry>
+	<entry key="MONGO_USER"></entry>
+	<entry key="MONGO_PASS"></entry>
+	<entry key="SPREADSHEET_DB_FILE"></entry>
 
-<!--  Printing settings -->
-<entry key="PRINTER_ONE"></entry>
-<entry key="PRINTER_TWO"></entry>
-<entry key="PRINTER_THREE"></entry>
-<entry key="PRINTER_FOUR"></entry>
+	<!-- Printing settings -->
+	<entry key="PRINTER_ONE"></entry>
+	<entry key="PRINTER_TWO"></entry>
+	<entry key="PRINTER_THREE"></entry>
+	<entry key="PRINTER_FOUR"></entry>
+	<entry key="INVOICE_FORM_DESCRIPTOR"></entry>
 
-<!--  Invoicing settings -->
-<entry key="CERTIFICATE">/opt/fm/auth/C.cer</entry>
-<entry key="PRIVATE_KEY">/opt/fm/auth/C.key</entry>
-<entry key="PRIVATE_KEY_PASS">pass</entry>
-<entry key="SSL">/usr/bin/openssl</entry>
-<entry key="INVOICE_SERIAL">CFDI</entry>
-<entry key="INVOICE_SENDER_NAME">YOURNAME</entry>
-<entry key="INVOICE_SENDER_TAX_CODE">RFC</entry>
-<entry key="INVOICE_SENDER_COUNTRY">MEXICO</entry>
-<entry key="INVOICE_SENDER_STATE">MICHOACAN</entry>
-<entry key="INVOICE_SENDER_CITY">MORELIA</entry>
-<entry key="INVOICE_SENDER_LOCALITY">MORELIA</entry>
-<entry key="INVOICE_SENDER_SUBURB">ST</entry>
-<entry key="INVOICE_SENDER_STREET"></entry>
-<entry key="INVOICE_SENDER_EXTEROR_NUMBER"></entry>
-<entry key="INVOICE_SENDER_INTERIOR_NUMBER"></entry>
-<entry key="INVOICE_SENDER_POSTAL_CODE"></entry>
-<entry key="INVOICE_SENDER_REGIME">INTERMEDIO</entry>
-<entry key="INVOICE_CERTIFICATE_AUTHORIRY_USER">dfsfs@live.com</entry>
-<entry key="INVOICE_CERTIFICATE_AUTHORIRY_PASS">sdfsdf</entry>
+
+	<!-- Invoicing settings -->
+	<entry key="CERTIFICATE"></entry>
+	<entry key="PRIVATE_KEY"></entry>
+	<entry key="PRIVATE_KEY_PASS"></entry>
+	<entry key="SSL"></entry>
+	<entry key="STORE_ID"></entry>
+	<entry key="INVOICE_SERIAL"></entry>
+
+	<entry key="INVOICE_SENDER_NAME"></entry>
+	<entry key="INVOICE_SENDER_TAX_CODE"></entry>
+	<entry key="INVOICE_SENDER_COUNTRY"></entry>
+	<entry key="INVOICE_SENDER_STATE"></entry>
+	<entry key="INVOICE_SENDER_CITY"></entry>
+	<entry key="INVOICE_SENDER_LOCALITY"></entry>
+	<entry key="INVOICE_SENDER_SUBURB"></entry>
+	<entry key="INVOICE_SENDER_STREET"></entry>
+	<entry key="INVOICE_SENDER_EXTEROR_NUMBER"></entry>
+	<entry key="INVOICE_SENDER_INTERIOR_NUMBER"></entry>
+	<entry key="INVOICE_SENDER_POSTAL_CODE"></entry>
+	<entry key="INVOICE_SENDER_REGIME"></entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_USER"></entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_PASS"></entry>
+
+	<!-- TAXING -->
+	<entry key="TAXES_IVA_NAME"></entry>
+	<entry key="TAXES_IVA_VALUE"></entry>
+
+	<!-- MAILING -->
+	<entry key="EMAIL_NOTIFICATIONS"></entry>
+	<entry key="EMAIL_NOTIFICATIONS_PASS"></entry>
+	<entry key="EMAIL_BODY"></entry>
+
 
 </properties>
