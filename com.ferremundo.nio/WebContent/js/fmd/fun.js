@@ -249,8 +249,6 @@ function setCaretToPos (input, pos) {
 };
 
 
-
-
 invoiceInfoLog=function(invoice,node){
 	var i=invoice;
 	console.log(invoice);
@@ -259,6 +257,7 @@ invoiceInfoLog=function(invoice,node){
 	var canceled=false;
 	var cloded=false;
 	var theLogs=" - | ";
+	i.logs?"":i.logs=[];
 	for(var j=0;j<i.logs.length;j++){
 		log=i.logs[j];
 		console.log('log');
@@ -330,12 +329,12 @@ invoiceInfoLog=function(invoice,node){
 	if(i.debt>0)bgcolor=pos?"#FFC2C2":'#d5a2a2';
 	if(agentPayed)bgcolor=pos?"#95ff9a":'#79cf7d';
 	if(i.invoiceType==2)bgcolor=pos?"#ffffff":'#d9d9d9';//COTIZACION
-	
-	$(defaultNode).preincapsule(consummerObj,'com.ferremundo.cps.GenericDiv').addClass('box fleft').css('background-color',bgcolor);
+	if(canceled)bgcolor="#616161";
+	$(defaultNode).preInCapsule(consummerObj,'com.ferremundo.cps.GenericDiv').addClass('box fleft').css('background-color',bgcolor);
 
 };
 nodeLog=function(src,node,classes){
-	$(node).preincapsule({content:src},'com.ferremundo.cps.GenericDiv').addClass(classes);
+	$(node).preInCapsule({content:src},'com.ferremundo.cps.GenericDiv').addClass(classes);
 };
 	
 clientauthenticateLP=function () {
@@ -473,6 +472,35 @@ clientauthenticateR=function () {
 	});
 	return ret;
 };
+
+authenticate_=function (pwd) {
+	var ret=false;
+	$.ajax({
+		url: "clientauthenticate",
+		dataType: "json",
+		type:'POST',
+		async:false,
+		data: {
+			password: pwd,
+			token : TOKEN,
+			clientReference: CLIENT_REFERENCE
+		},
+		success: function(data) {
+			AUTHORIZED=true;
+			ret=true;
+		},
+		error: function(jqXHR, textStatus, errorThrown){
+			alert(jqXHR.status+" "+textStatus+" : "+jqXHR.responseText);
+			
+			//$( "#unauthorizedAlert" ).dialog('open');
+			//$('#unlockpassword').focus();
+			//$($( "#unauthorizedAlert" ).dialog("option", "buttons")['Ok']).focus();
+			//
+		}
+	});
+	return ret;
+};
+
 
 registerShopman=function () {
 	var ret=false;
@@ -708,6 +736,7 @@ resetClient=function(){
 			    var yyyy = pdd.getFullYear();
 			    var date = yyyy+'.'+mm + '.' + dd;
 				var src="<div id=record-"+r.id+">"+r.id+" | "+date+" | "+r.text+"</div>";
+				$('#records').empty();
 				nodeLog(src,"#records","box fleft");
 			}
 			

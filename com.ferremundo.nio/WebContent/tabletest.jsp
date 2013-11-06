@@ -24,8 +24,8 @@
 <script type="text/javascript" src="js/jquery.capsule.js"></script>
 <script type="text/javascript" src="js/jquery.copyCSS.js"></script>
 <!--script type="text/javascript" src="js/hyphenate.js"></script-->
-<script type="text/javascript" src="cps/global.cps.js"></script>
-<script type="text/javascript" src="cps/tableing.cps.js"></script>
+
+<!-- script type="text/javascript" src="cps/tableing.cps.js"></script-->
 
 <script type="text/javascript" src="js/jquery.hypher.js"></script>
 <!--script type="text/javascript" src="js/es.js"></script-->
@@ -40,7 +40,11 @@
 
 
 <script type="text/javascript">
+$.capsule.host="http://localhost:8080/com.ferremundo.nio/";
+$.capsule("http://localhost:8080/com.ferremundo.nio/js/cps/SysAuth.js");
 
+$.capsule("http://localhost:8080/com.ferremundo.nio/cps/tableing.cps.js");
+$.capsule("http://localhost:8080/com.ferremundo.nio/cps/global.cps.js");
 
 function replaceAll(Source,stringToFind,stringToReplace){
 	var temp = Source;
@@ -92,8 +96,16 @@ $(document).ready(function(){
 
 	//$.capsule(capsules);
 	//$.capsule('cores');
-	$.capsule("<div>chingon soy $(person), tu eres $(name)</div>");
-	$.capsule("<div>chingon soy tu, tu eres $(name)</div>");
+	$('#thebutton').click(function(){
+		$('body').feedCpsSysAuth("input",{
+			failed:"falló",
+			cancel:"cancelar?",
+			destroy:true,
+			todo:function(a){if(a=="ready")return true;return false;}
+		});	
+	});
+	//$.capsule("<div>chingon soy $(person), tu eres $(name)</div>");
+	//$.capsule("<div>chingon soy tu, tu eres $(name)</div>");
 	var item= new Item(1,
 			'code code code code code code code code code code code code code code code code',
 			'unit unit unit unit unit unit unit unit unit unit unit unit unit unit unit unit unit unit unit ',
@@ -112,7 +124,7 @@ $(document).ready(function(){
 	//$('#resultset').incapsule(item).addClass('box');//.addClass('odd').removeClass('boxie').addClass('boxie').css('background-color', '#dff');
 	
 	rs=randomString;
-	for(var i=0;i<10;i++){
+	for(var i=0;i<1;i++){
 		var items=[];
 		for(var j=0;j<1+Math.floor(Math.random() * 10);j++){
 			var item= new Item(rs(1,1,1,2,'0'),
@@ -123,12 +135,16 @@ $(document).ready(function(){
 					rs(1,1,1,3,'0'));
 			items.push(item);
 		}
-		$('#resultset').incapsule({dclass:'box fleft', width:'100%',content:''},'com.ferremundo.cps.GenericDiv')
+		$('#resultset').inComFerremundoCpsGenericDiv({dclass:'box fleft', width:'100%',content:''})
+		.comFerremundoCpsTB(items).addClass(i%2!=0?'odd':'even');
+		$('#resultset').inCapsule({dclass:'box fleft', width:'100%',content:''},'com.ferremundo.cps.GenericDiv')
 		.capsule(items,'com.ferremundo.cps.TB').addClass(i%2!=0?'odd':'even');
 
 	}
-	$.capsule("<div>$(content)</div>","com.ferremundo.cps.Mydiv","mydiv");
-	$('#resultset').com.ferremundo.cps.Mydiv({content:"the content"});
+	$.capsule('<div>$(content)</div>');//,"com.ferremundo.cps.Mydiv");
+	$('#resultset').capsule({content:"the content"});
+	//$('#resultset').capsule({person:"the person"});
+	//$('#randid').feedSysAuth("input",{});
 	//alert($('<p>asfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdf<p>').appendTo("document")[0].width);
 
 /*	(function(a){
@@ -150,5 +166,6 @@ $(document).ready(function(){
 </head>
 <body class=''>
 <div id="resultset" style="width: 80%;" class=""></div>
+<button id="thebutton">auth</button>
 </body>
 </html>

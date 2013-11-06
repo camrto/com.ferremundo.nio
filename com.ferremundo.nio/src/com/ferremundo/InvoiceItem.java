@@ -33,7 +33,8 @@ public class InvoiceItem extends Product{
 		this.quantity=quantity;
 	}*/
 	
-	
+	public InvoiceItem() {}
+	/*
 	public InvoiceItem(JSONObject json) {
 		
 		try {
@@ -57,7 +58,7 @@ public class InvoiceItem extends Product{
 			e.printStackTrace();
 		}
 	}
-	
+	*/
 	public float getQuantity(){
 		return roundTo6(quantity);
 	}
@@ -67,6 +68,9 @@ public class InvoiceItem extends Product{
 		return roundTo6(super.getUnitPrice()*quantity);
 	}
 	
+	public void setQuantity(float quantity){
+		this.quantity=quantity;
+	}
 	/*public String toJson() {
 		String json="{"+
 		"\"quantity\":\""+this.quantity+"\","+

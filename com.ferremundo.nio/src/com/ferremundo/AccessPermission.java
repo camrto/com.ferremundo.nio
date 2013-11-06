@@ -36,7 +36,9 @@ public enum AccessPermission {
 	INVOICE_ORDER_PAY_ON_PAST_DUE,
 	INVOICE_FACTURE_PAY_ON_PAST_DUE,
 	INVOICE_CANCEL,
-	READ_THE_BOX;
+	READ_THE_BOX,
+	
+	RESET_PRODUCT_INVENTORY;
 	
 	public static List<AccessPermission> admin(){
 		return new ArrayList<AccessPermission>(Arrays.asList(

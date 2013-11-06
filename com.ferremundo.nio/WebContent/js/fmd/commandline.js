@@ -185,9 +185,14 @@
 			$('#commands').ShowBubblePopup( {innerHtml: 'consultar caja'} );
 			this.kind="consultthebox";
 		}
+		else if(this.command=='%ip'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'inventarear productos'} );
+			this.kind="productinventoryadd";
+		}
 		else {
 			$('#commands').HideBubblePopup();
 			if(this.command.indexOf("@")==0||
+					this.command.indexOf("%")==0||
 					this.command.indexOf("+")==0||
 					this.command.indexOf("$")==0){
 				console.log("matches");

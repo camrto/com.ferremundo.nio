@@ -13,6 +13,9 @@ public class GSettings extends Properties{
 	private static GSettings gSettings=null;
 	private static Properties properties;//=new Properties();
 	private static String folderBase="/opt/fm";
+	/**
+	 * 
+	 */
 	public GSettings(){
 		if(properties==null){
 			String path=
@@ -26,7 +29,6 @@ public class GSettings extends Properties{
 			} catch (FileNotFoundException e1) {
 				e1.printStackTrace();
 			}
-			System.out.println(path);
 			try {
 				this.loadFromXML(is);
 				is.close();
@@ -69,7 +71,5 @@ public class GSettings extends Properties{
 		}
 		return gSettings.getKey(key);
 	}
-	public static void main(String[] args) {
-		System.out.println(GSettings.get("TMP_FOLDER"));
-	}
+	
 }

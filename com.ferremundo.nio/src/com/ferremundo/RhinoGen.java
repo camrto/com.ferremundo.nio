@@ -73,8 +73,8 @@ public class RhinoGen {
 		}
 		System.out.println("RHINO: "+new Gson().toJson(rhino));
 		String ret=rhino.timbrar(
-				g.getKey("INVOICE_CERTIFICATE_AUTHORIRY_USER"),//ferremundo@live.com",
-				g.getKey("INVOICE_CERTIFICATE_AUTHORIRY_PASS"));
+				g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"),//ferremundo@live.com",
+				g.getKey("INVOICE_CERTIFICATE_AUTHORITY_PASS"));
 		return ret;
 	}
 

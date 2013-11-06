@@ -1,10 +1,15 @@
 package com.ferremundo;
 
 import java.net.URLDecoder;
+import java.util.Date;
+import java.util.LinkedList;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Mongoi;
@@ -25,6 +30,9 @@ public class DBPort extends HttpServlet{
 	private static final String RETURN_RECORDS="@rr";
 
 	private static final String DEACTIVATE_RECORD = "@rb";
+	
+	private static final String RESET_PRODUCT_INVENTORY="%ri";
+	private static final String PRODUCT_INVENTORY_ADD="%ip";
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response){
 		try{
@@ -49,6 +57,14 @@ public class DBPort extends HttpServlet{
 			}
 			else if(dc.equals(RETURN_RECORDS)){
 				returnRecords(request, response, onlineClient);
+				return;
+			}
+			else if(dc.equals(PRODUCT_INVENTORY_ADD)){
+				productInventoryAdd(request, response, onlineClient);
+				return;
+			}
+			else if(dc.equals(RESET_PRODUCT_INVENTORY)){
+				resetProductInventory(request, response, onlineClient);
 				return;
 			}
 			else{
@@ -320,6 +336,129 @@ public class DBPort extends HttpServlet{
 		}
 	}
 
+	private void resetProductInventory(HttpServletRequest request, HttpServletResponse response,OnlineClient onlineClient){
+		try{
+			if(
+					!onlineClient.isAuthenticated(request)&&!(
+					onlineClient.hasAccess(AccessPermission.RESET_PRODUCT_INVENTORY)||
+					onlineClient.hasAccess(AccessPermission.ROOT)
+					)){
+				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().write("acceso denegado");
+				return;
+			}
+			if(requestHasArg(request, "args")){
+				String args=request.getParameter("args");
+				if(!args.equals("")){
+					String[] argsspl=URLDecoder.decode(args,"utf-8").split(" ");
+				}
+				else{
+					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+					response.getWriter().write("ERROR: argumentos no especificados");
+					return;
+				}
+			}
+			else{
+				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().write("ERROR: argumentos no especificados");
+				return;
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	private void productInventoryAdd(HttpServletRequest request, HttpServletResponse response,OnlineClient onlineClient){
+		try{
+			if(
+					!onlineClient.isAuthenticated(request)&&!(
+					onlineClient.hasAccess(AccessPermission.PRODUCT_UPDATE)||
+					onlineClient.hasAccess(AccessPermission.ROOT)
+					)){
+				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().write("acceso denegado");
+				return;
+			}
+
+			String itemsArgs=request.getParameter("items");
+			if(!itemsArgs.equals("")){
+				String itemsdec=URLDecoder.decode(itemsArgs,"utf-8");
+				JSONArray jList=null;
+				LinkedList<InvoiceItem> items=new LinkedList<InvoiceItem>();
+				jList=new JSONArray(itemsdec);
+				System.out.println(itemsdec);
+				for(int i=jList.length()-1;i>=0;i--){
+					JSONObject jsonObject=jList.getJSONObject(i);
+					System.out.println();
+					InvoiceItem item=new Gson().fromJson(jList.getJSONObject(i).toString(),InvoiceItem.class);
+					System.out.println(new Gson().toJson(item));
+					System.out.println("item is:"+new Gson().toJson(item));
+					String itemHash=jList.getJSONObject(i).getString("hash");
+					JSONObject product=new JSONObject(new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"hash\" : \""+itemHash+"\" }").toString());
+					System.out.println("product for hash "+itemHash+" is:"+product);
+					Object fti=null;
+					if(product.has("firstTimeInventored"))fti=product.get("firstTimeInventored");
+					if(item.getId()==-1){//means edited
+						//boolean inv=new Boolean(product.get("firstTimeInventored").toString());
+						ProductProviderPricesHistory history=new ProductProviderPricesHistory(
+								product.getLong("id"),
+								item.getQuantity(),
+								product.getDouble("unitPrice"),
+								new Date().getTime(),
+								onlineClient.getShopman().getLogin());
+						//history.persist();
+						if(fti!=null){
+							if(new Boolean(fti.toString())){
+								System.out.println("inventored : "+product.toString());
+								new Mongoi().doIncrement(Mongoi.PRODUCTS, "{ \"hash\" : \""+itemHash+"\" }", "{ \"stored\" : "+item.getQuantity()+" }");
+							}
+							else{
+								System.out.println("not inventored : "+product.toString());
+								new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"hash\" : \""+itemHash+"\" }", "{ \"stored\" : "+item.getQuantity()+" }");
+							}
+						}
+						else{
+							System.out.println("not inventored : "+product.toString());
+							new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"hash\" : \""+itemHash+"\" }", "{ \"stored\" : "+item.getQuantity()+" }");
+						}
+					}
+					else{
+						ProductProviderPricesHistory history=new ProductProviderPricesHistory(
+								product.getLong("id"),
+								item.getQuantity(),
+								0,
+								new Date().getTime(),
+								onlineClient.getShopman().getLogin());
+						history.persist();
+						if(fti!=null){
+							if(new Boolean(fti.toString())){
+								System.out.println("inventored : "+product.toString());
+								new Mongoi().doIncrement(Mongoi.PRODUCTS, "{ \"hash\" : \""+itemHash+"\" }", "{ \"stored\" : "+item.getQuantity()+" }");
+							}
+							else{
+								System.out.println("not inventored : "+product.toString());
+								new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"hash\" : \""+itemHash+"\" }", "{ \"stored\" : "+item.getQuantity()+" }");
+							}
+						}
+						else{
+							System.out.println("not inventored : "+product.toString());
+							new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"hash\" : \""+itemHash+"\" }", "{ \"stored\" : "+item.getQuantity()+" }");
+						}
+					}
+					items.add(item);
+				}
+			}
+			else {
+				response.setStatus( HttpServletResponse.SC_BAD_REQUEST);
+				response.getWriter().write("lista vacía");
+				return;
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
 	private void methodTemplate(HttpServletRequest request, HttpServletResponse response,OnlineClient onlineClient){
 		try{
 			if(

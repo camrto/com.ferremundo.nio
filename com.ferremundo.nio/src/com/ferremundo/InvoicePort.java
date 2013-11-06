@@ -1,10 +1,13 @@
 package com.ferremundo;
 
 import java.net.URLDecoder;
+import java.util.LinkedList;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONArray;
 
 import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Mongoi;
@@ -20,6 +23,7 @@ public class InvoicePort extends HttpServlet{
 	private static final long serialVersionUID = 1L;
 	
 	private static final String INCREMENT_AGENT_EARNING="$ag";
+	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response){
 		try{

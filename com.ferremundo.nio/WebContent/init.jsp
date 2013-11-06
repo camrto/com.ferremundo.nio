@@ -34,7 +34,10 @@
 <script type="text/javascript" src="js/jquery.caret.1.02.min.js"></script>
 <script type="text/javascript" src="js/URLEncode.js"></script>
 <script type="text/javascript" src="js/jquery.capsule.js"></script>
+
+<script type="text/javascript" src="js/cps/SysAuth.js"></script>
 <script type="text/javascript" src="cps/tableing.cps.js"></script>
+<script type="text/javascript" src="cps/global.cps.js"></script>
 
 <script type="text/javascript" src="js/jquery.idle-timer.js"></script>
 <script type="text/javascript" src="js/jquery-bubble-popup-v3.min.js"></script>
@@ -60,9 +63,13 @@
 
 
 <script type="text/javascript">
+/*
+$.capsule.host="http://localhost:8080/com.ferremundo.nio/";
+$.capsule("http://localhost:8080/com.ferremundo.nio/js/cps/SysAuth.js");
 
-
-
+$.capsule("http://localhost:8080/com.ferremundo.nio/cps/tableing.cps.js");
+$.capsule("http://localhost:8080/com.ferremundo.nio/cps/global.cps.js");
+*/
 
 
 var REQUEST_NUMBER=0;
@@ -78,10 +85,9 @@ OnlineClient onlineClient=clients.get(clientReference);
 out.println("\tvar TOKEN='"+onlineClient.getToken()+"';");
 request.getSession().setMaxInactiveInterval(60*60*8);
 System.out.println("CLIENT_REFERENCE="+clientReference+";\n"+"IP_ADDRESS='"+ipAddres+"';\n"+"TOKEN='"+onlineClient.getToken()+"';");
-
 %>
-var AUTHORIZED=false;
 
+var AUTHORIZED=false;
 
 var shopman={};
 var inputValue;
@@ -100,10 +106,11 @@ var emptyCommand=false;
 var key_down = $.Event("keydown.autocomplete"); key_down.keyCode =  $.ui.keyCode.DOWN;
 var keyup = $.Event("keydown.autocomplete"); keyup.keyCode =  $.ui.keyCode.UP;
 var keyenter = $.Event("keydown.autocomplete"); keyenter.keyCode =  $.ui.keyCode.ENTER;
-var keyenterUp = $.Event("keyup.autocomplete"); keyenter.keyCode =  $.ui.keyCode.ENTER;
+var keyenterUp = $.Event("keyup.autocomplete"); keyenterUp.keyCode =  $.ui.keyCode.ENTER;
 
 
 $(document).ready(function(){
+	
 	$('#commands').CreateBubblePopup({innerHtml: 'comandos'});
 	autocomplete('#commands');
 	$("#login-form").dialog({
@@ -502,7 +509,12 @@ $(document).ready(function(){
 						alert(data.successResponse);
 						$.unblockUI();
 					},
-					error: function(){
+					error: function(jqXHR, textStatus, errorThrown){
+						console.log(jqXHR);
+						console.log(textStatus);
+						console.log(errorThrown);
+						alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
+					
 						$.unblockUI();
 					},
 					dataType:"json"
@@ -717,6 +729,8 @@ $(document).ready(function(){
 							$('#commands').val('');
 						}
 						if(commandline.command=='@rl'){
+							console.log("DATA:");
+							console.log(data);
 							invoiceInfoLog(data.invoice);
 							$('#commands').val('');
 						}
@@ -741,7 +755,8 @@ $(document).ready(function(){
 					success: function(data){
 						$('#resultset').empty();
 						//alert("hora de empezar");
-						
+						console.log("DATA");
+						console.log(data);
 						for(var i=0;i<data.invoices.length;i++){
 							var gtotal=0;
 							for(var j=0;j<data.invoices[i].items.length;j++){
@@ -815,10 +830,16 @@ $(document).ready(function(){
 							}
 							
 							var consummerObj={content:consummerContent};
-							
-							$('#resultset').incapsule({dclass:'box fleft', width:'100%',content:''},'com.ferremundo.cps.GenericDiv')
+							/*
+							$('#resultset').inCapsule({dclass:'box fleft', width:'100%',content:''},'com.ferremundo.cps.GenericDiv')
 							.capsule(data.invoices[i].items,'com.ferremundo.cps.TB').addClass(i%2!=0?'odd':'even')
-							.precapsule(consummerObj,'com.ferremundo.cps.GenericDiv');
+							.preCapsule(consummerObj,'com.ferremundo.cps.GenericDiv');
+							*/
+							console.log("data.invoices["+i+"].items");
+							console.log(data.invoices[i].items);
+							$('#resultset').inComFerremundoCpsGenericDiv({dclass:'box fleft', width:'100%',content:''})
+							.comFerremundoCpsTB(data.invoices[i].items).addClass(i%2!=0?'odd':'even')
+							.preComFerremundoCpsGenericDiv(consummerObj);
 						}
 						$("#resultset").append("-- FIN DE BUSQUEDA --");
 						
@@ -891,6 +912,41 @@ $(document).ready(function(){
 				$('#commands').val('');
 			}
 			else alert("escribe algo para recordar");
+		}
+		else if(commandline.kind=='productinventoryadd'){
+			$('body').preinSysAuth({id:'sysauth'}).feedSysAuth("input",{destroyAfter:true,fun:function(pass){
+				
+				var ret=false;
+				if(authenticate_(pass)){
+					ret=true;
+				
+					$.ajax({
+						url: 'dbport',
+						type:'POST',
+						data: {
+							command:encodeURIComponent(commandline.command),
+							args: commandline.args.join(" "),
+							requestNumber: REQUEST_NUMBER,
+							consummerType: client?client.consummerType:1,
+							token : TOKEN,
+							items : encodeURIComponent($.toJSON(productsLog)),
+							clientReference: CLIENT_REFERENCE
+						},
+						success: function(data){
+							alert("HECHO :"+data.record.text);
+							$("#record-"+data.record.id).remove();
+						},
+						error : function(jqXHR, textStatus, errorThrown){
+							alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
+						}
+					});
+	            }
+				return ret;
+			}});
+		
+			
+			
+			$('#commands').val('');
 		}
 	});
 

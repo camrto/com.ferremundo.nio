@@ -20,10 +20,13 @@ import org.bson.BSONObject;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.ferremundo.Client;
 import com.ferremundo.Invoice;
 import com.ferremundo.InvoiceFM01;
+import com.ferremundo.InvoiceItem;
 import com.ferremundo.MD5;
 import com.ferremundo.Product;
 import com.ferremundo.stt.GSettings;
@@ -64,6 +67,11 @@ public class Mongoi {
 	public static final String PRODUCTS_COUNTER = "productscounter";
 	public static final String REFERENCE="reference";
 	
+	public static final String PRODUCT_TENDENCY="producttendency";
+	public static final String PRODUCT_PROVIDER_PRICES_HISTORY="productproviderpriceshistory";
+	
+	public static final String SYSTEM_IPS="systemips";
+	
 	public static final int STARTS=0;
 	public static final int CONTAINS=1;
 	public static final int MATCHES=2;
@@ -78,8 +86,6 @@ public class Mongoi {
 	private static final String EXPRIRATION_DATE="2013/12/21";
 	
 	public Mongoi(){
-		
-		
 		if(mongo==null){
 			Date today = null;
 			Date expires = null;
@@ -112,14 +118,12 @@ public class Mongoi {
 				e.printStackTrace();
 			}
 		}
-		
 	}
 	
 	public DBCursor doFindFieldsMatches(String where, String[] fields, Object[] patterns){
 		ArrayList<DBObject> and=new ArrayList<DBObject>();
 		for(int i=0;i<fields.length;i++){
 			and.add(new BasicDBObject(fields[i],patterns[i]));
-			
 		}
 		DBObject query=new BasicDBObject("$and",and);
 		DBCollection collection=db.getCollection(where);
@@ -209,6 +213,13 @@ public class Mongoi {
 		DBCursor cursor=collection.find(query);
 		return cursor;
 	}
+	public DBCursor doFindGreaterThan(String where,String field, Long n){
+		BasicDBObject query = new BasicDBObject();
+		query.put(field, new BasicDBObject("$gt", n));
+		DBCollection collection=db.getCollection(where);
+		DBCursor cursor=collection.find(query);
+		return cursor;
+	}
 	
 	public DBCursor doFind(String where){
 		DBCollection collection=db.getCollection(where);
@@ -237,10 +248,11 @@ public class Mongoi {
 		return cursor;
 	}
 		
-	public void doInsert(String where, String json) {
+	public WriteResult doInsert(String where, String json) {
 		DBCollection collection = db.getCollection(where);
 		DBObject dbObject=(DBObject)JSON.parse(json);
-		collection.insert(dbObject);
+		WriteResult wr=collection.insert(dbObject);
+		return wr;
 	}
 	
 	public void doInsert(String where, Object src) {
@@ -278,6 +290,15 @@ public class Mongoi {
 		//WriteResult wr=collection.update(dbObject2,dbObject);
 		String st=collection.findAndModify(dbObject2,dbObject).get(field).toString();
 		return new Integer(st);
+	}
+	public float doIncrement(String where, String matches, String field, float amount){
+		DBCollection collection = db.getCollection(where);
+		String js="{ \"$inc\" : { \""+field+"\" : "+amount+" } }";
+		DBObject dbObject=(DBObject)JSON.parse(js);
+		DBObject dbObject2=(DBObject)JSON.parse(matches);
+		//WriteResult wr=collection.update(dbObject2,dbObject);
+		String st=collection.findAndModify(dbObject2,dbObject).get(field).toString();
+		return new Float(st);
 	}
 	
 	public DBCollection getCollection(String coll){
@@ -406,25 +427,18 @@ public class Mongoi {
 		}*/
 	}
 	public static void main(String[] args) {
-	/*
-		DBObject dbObject=new Mongoi().doFindOne(INVOICES, "{\"reference\" : \"43RF\"}");
 		
-		System.out.println(dbObject);
+		DBObject dbObject=new Mongoi().doFindOne(PRODUCTS, "{ \"hash\" : \"e9a98effaff20dd392d38d9a5cd2d5e3\"}");
+		JSONObject jsonObject=null;
 		try {
-			Mongo mongo=new Mongo("localhost", 27017);
-			DB db=mongo.getDB("globaldb");
-			db.addUser("ray", "alaverga".toCharArray());
-			
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MongoException e) {
+			jsonObject=new JSONObject(dbObject.toString());
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Mongoi m=new Mongoi();
-		m.getDB().addUser("ray", "alaverga".toCharArray());
-		*/
+		InvoiceItem item=new Gson().fromJson(jsonObject.toString(),InvoiceItem.class);
+		System.out.println(dbObject);
+		System.out.println(item.getHash());
 		
 	}
 	public DB getDB(){
@@ -441,6 +455,14 @@ public class Mongoi {
 			e.printStackTrace();
 		}
 		DB db = mongo.getDB(Mongoi.GLOBAL_DB);*/
+		
+		new Mongoi().getCollection(PRODUCT_PROVIDER_PRICES_HISTORY).ensureIndex(new BasicDBObject("time", 1));
+		new Mongoi().getCollection(PRODUCT_PROVIDER_PRICES_HISTORY).ensureIndex(new BasicDBObject("id", 1));
+		
+		new Mongoi().getCollection(PRODUCT_TENDENCY).ensureIndex(new BasicDBObject("time", 1));
+		new Mongoi().getCollection(PRODUCT_TENDENCY).ensureIndex(new BasicDBObject("id", 1));
+		
+		
 		new Mongoi().getCollection(TEMPORAL_RECORDS).ensureIndex(new BasicDBObject("login", 1));
 		new Mongoi().getCollection(TEMPORAL_RECORDS).ensureIndex(new BasicDBObject("todo", 1));
 		new Mongoi().getCollection(TEMPORAL_RECORDS).ensureIndex(new BasicDBObject("id", 1), new BasicDBObject("unique", true));
@@ -473,14 +495,14 @@ public class Mongoi {
 		agentsCollection.ensureIndex(new BasicDBObject("code", 1), new BasicDBObject("unique", true));
 		agentsCollection.ensureIndex(new BasicDBObject("id", 1), new BasicDBObject("unique", true));
 		new Mongoi().getCollection(Mongoi.AGENTS_COUNTER).ensureIndex(new BasicDBObject("unique", 1), new BasicDBObject("unique", true));
-		new Mongoi().doInsert(Mongoi.AGENTS_COUNTER, "{ \"unique\" : \"unique\" , \"id\" : 1035}");
+		new Mongoi().doInsert(Mongoi.AGENTS_COUNTER, "{ \"unique\" : \"unique\" , \"id\" : 0}");
 		
 		
 		DBCollection shopmansCollection=new Mongoi().getCollection(Mongoi.SHOPMANS);
 		shopmansCollection.ensureIndex(new BasicDBObject("login", 1), new BasicDBObject("unique", true));
 		shopmansCollection.ensureIndex(new BasicDBObject("id", 1), new BasicDBObject("unique", true));
 		new Mongoi().getCollection(Mongoi.SHOPMANS_COUNTER).ensureIndex(new BasicDBObject("unique", 1), new BasicDBObject("unique", true));
-		new Mongoi().doInsert(Mongoi.SHOPMANS_COUNTER, "{ \"unique\" : \"unique\" , \"id\" : 10}");
+		new Mongoi().doInsert(Mongoi.SHOPMANS_COUNTER, "{ \"unique\" : \"unique\" , \"id\" : 0}");
 		
 	}
 	

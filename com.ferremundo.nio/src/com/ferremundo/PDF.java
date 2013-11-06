@@ -192,7 +192,7 @@ public class PDF {
         System.out.println("form.getHeadArea().getTop():"+form.getHeadArea().getTop());
         System.out.println("PtsConverter.mm2Pt2(form.getHeadArea().getTop()):"+PtsConverter.mm2Pt2(form.getHeadArea().getTop()));
         float   x   = PtsConverter.mm2Pt(form.getHeadArea().getLeft());
-        float   y   = PtsConverter.mm2Pt(form.getHeadArea().getBottom()-form.getHeadArea().getHeight())+10;
+        float   y   = PtsConverter.mm2Pt(form.getHeadArea().getBottom()-form.getHeadArea().getHeight())+6;
         contentByte.addTemplate(template, x, y);
         /*contentByte.setFontAndSize(baseFont, fontSize);
 	
@@ -229,7 +229,7 @@ public class PDF {
 
 	private void insertDateToPDF() {
 		insertTextToPDF(form.getDateArea(),
-				new SimpleDateFormat("dd/MM/yyyy").format(new Date(invoice.getUpdated())),
+				new SimpleDateFormat("dd/MM/yyyy").format(new Date(invoice.getCreationTime())),
 				FONT_SIZE_INVOICE_HEAD,ALIGNMENT_CENTER);
 	}
 

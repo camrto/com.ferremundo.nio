@@ -52,6 +52,9 @@
 		
 		html:function(){
 			var tc=this.get('com.ferremundo.cps.GenericTC');
+			console.log("com.ferremundo.cps.GenericTC");
+			console.log(tc);
+			
 			TC=function(d,w,c){return{dclass:d,width:w,content:c};};
 			var ret=
 				"<table id='$(id)' class='$(gclasses)' style='width:100%;'><[><tr>"+
@@ -65,6 +68,7 @@
 				         TC('$(classes)','$(totalWidth)','$(total)')
 				])+
 				"</tr></[></table>";
+			console.log(ret);
 			return ret;
 		},
 		

@@ -3,6 +3,7 @@ package com.ferremundo;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.net.URLDecoder;
+import java.util.List;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +21,7 @@ import org.xml.sax.InputSource;
 import mx.nafiux.Rhino;
 
 import com.ferremundo.InvoiceLog.LogKind;
+import com.ferremundo.db.Inventory;
 import com.ferremundo.db.Mongoi;
 import com.ferremundo.mailing.HotmailSend;
 import com.ferremundo.stt.GSettings;
@@ -148,7 +150,13 @@ public class InvoiceCancelling extends HttpServlet{
 								LogKind.CANCEL.toString(),
 								onlineClient.getShopman().getLogin()
 								));
-						
+						List<InvoiceItem> invoiceItems=invoice.getItems();
+						for(int i=0;i<invoiceItems.size();i++){
+							InvoiceItem item=invoiceItems.get(i);
+							
+							if(Inventory.exists(item)&&!item.isDisabled())
+								Inventory.incrementStored(item);
+						}
 						String successResponse="CANCELADO "+invoice.getReference()+": se realizó entrada-salida en caja $"+cashIn+"-$"+cashOut+" --> $"+(cashIn-cashOut);
 						response.getWriter().write("{ \"message\":\""+successResponse+"\" }");
 						

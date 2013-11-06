@@ -7,7 +7,7 @@ autocomplete=function(input){
 /** AUTOCOMPLETE SOURCE*/
 		source: function(request, response) {
 			var event=this.options.keydownEvent;
-			if(event.which==13)console.log('ENNTER');
+			if(event.which==13)console.log('ENTER');
 			console.log('this');
 			console.log(this);
 			console.log(event);

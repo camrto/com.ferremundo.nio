@@ -72,6 +72,9 @@ public class Product implements Serializable {
     private int calls;
 
 	private boolean disabled=false;
+	private boolean edited=false;
+	
+	private boolean firstTimeInventored;
 	
 	public static final int KIND_1=1;
 	public static final int KIND_2=2;
@@ -91,8 +94,6 @@ public class Product implements Serializable {
 	}
 	
 	public Product(String code, float unitPrice, String unit, String mark,String description, int productPriceKind) {
-		super();
-		
 		this.code=code;
 		this.unitPrice = unitPrice;
 		this.unit = unit;
@@ -258,7 +259,8 @@ public class Product implements Serializable {
 	
 
 	public String getHash() {
-		return MD5.get(code+" "+unit+" "+mark+" "+description);
+		String str=code+" "+unit+" "+mark+" "+description;
+		return MD5.get(str);
 	}
 	public void setHash(String hash) {
 		this.hash = hash;
@@ -321,6 +323,18 @@ public class Product implements Serializable {
 	
 	public boolean isDisabled(){
 		return disabled;
+	}
+	public boolean isEdited() {
+		return edited;
+	}
+	public void setEdited(boolean edited) {
+		this.edited = edited;
+	}
+	public boolean isFirstTimeInventored() {
+		return firstTimeInventored;
+	}
+	public void setFirstTimeInventored(boolean firstTimeInventored) {
+		this.firstTimeInventored = firstTimeInventored;
 	}
 	
 }

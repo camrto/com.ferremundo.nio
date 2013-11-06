@@ -51,6 +51,7 @@ public class Port extends HttpServlet{
 		if(null!=search){
 			String searchRequestID=req.getParameter("searchRequestID");
 			String commandKind=req.getParameter("commandkind");
+			System.out.println("commandKind="+commandKind);
 			if(null!=commandKind){
 				String decSearch=URLDecoder.decode(search,"utf-8").toUpperCase();
 				
@@ -115,14 +116,15 @@ public class Port extends HttpServlet{
 					System.out.println(json);
 					resp.getWriter().print(json);//"{\"p\":[{\"code\":\"0\"}]}");
 				}
-				else if(commandKind.equals("client")||commandKind.equals("agent")||commandKind.equals("agenthistory")){
+				else if(commandKind.equals("client")||commandKind.equals("agent")||commandKind.equals("agentstatus")||commandKind.equals("clientstatus")){
 					if(!(onlineClient.hasAccess(AccessPermission.CONSUMMER_READ)||
-							onlineClient.hasAccess(AccessPermission.BASIC))){
+							onlineClient.hasAccess(AccessPermission.BASIC)
+							||onlineClient.hasAccess(AccessPermission.ROOT))){
 						resp.getWriter().print("{\"clients\" : [ ],\"requestNumber\" : \""+requestNumber+"\"}");
 						return;
 					}
 					String where=Mongoi.CLIENTS;
-					if(commandKind.equals("agent")||commandKind.equals("agenthistory"))where=Mongoi.AGENTS;
+					if(commandKind.equals("agent")||commandKind.equals("agentstatus"))where=Mongoi.AGENTS;
 
 					System.out.println("client searching for:::'"+decSearch+"'");
 					//ClientsStore cs=ClientsStore.instance();

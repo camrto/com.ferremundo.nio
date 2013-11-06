@@ -40,12 +40,16 @@ public class ClientHistory extends HttpServlet{
 			String hash=request.getParameter("hash");
 			String[] fields=null;
 			List<DBObject> list=new LinkedList<DBObject>();
-			System.out.println("find history for:"+hash+" in '"+where+"'!='"+Mongoi.AGENTS.toString()+"'");
+			System.out.println("find history for:"+hash+" in '"+where);
 			if(where.equals(Mongoi.AGENTS.toString())){
-				System.out.println(hash+" AGENTS");
-				list=new Mongoi().doFindAgentHistory(hash, 10,0);
+				
+				list=new Mongoi().doFindAgentHistory(hash, 50,0);
 			}
-			else if(where.equals(Mongoi.CLIENTS))fields=new String[]{"client.code"};
+			else if(where.equals(Mongoi.CLIENTS)){
+				list=new Mongoi().doFindClientHistory(hash, 50,0);
+				
+			}
+			System.out.println(new Gson().toJson(list));
 			response.getWriter().write("{ \"invoices\" : "+new Gson().toJson(list)+" }");
 		}
 		catch(Exception e){

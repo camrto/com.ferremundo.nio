@@ -19,6 +19,7 @@ import org.jopendocument.dom.spreadsheet.Sheet;
 import org.jopendocument.dom.spreadsheet.SpreadSheet;
 
 import com.ferremundo.db.Mongoi;
+import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -55,7 +56,7 @@ public class Updater extends HttpServlet{
 		String response="";
 		
 		
-		File file = new File("/home/dios/FERREMUNDO/BD/BASE.ods");
+		File file = new File(GSettings.get("SPREADSHEET_DB_FILE"));//"/home/dios/FERREMUNDO/BD/BASE.ods");
 		Sheet sheet=null;
 		try {
 			sheet = SpreadSheet.createFromFile(file).getSheet(4);
@@ -85,7 +86,7 @@ public class Updater extends HttpServlet{
 				int productPriceKind=new Integer(sheet.getCellAt("H"+i).getTextValue());
 				Product product= new Product(code, unitPrice, unit, mark,description, productPriceKind);
 				String pstr=code+" "+unit+" "+mark+" "+description;
-				String hash=MD5.get(pstr);
+				String hash=product.getHash();//MD5.get(pstr);
 				product.setHash(hash);
 				DBObject obj=new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"hash\" : \""+hash+"\"}");
 				if(obj==null){
@@ -110,7 +111,7 @@ public class Updater extends HttpServlet{
 			i++;
 			
 		}
-		response+="total products checked -> "+sheet.getRowCount()+"\n";
+		response+="total products checked -> "+(i-1)+"\n";
 		return response;
 		/*EntityManager em=EMF.get(EMF.UNIT_PRODUCT).createEntityManager();
 		em.getTransaction().begin();

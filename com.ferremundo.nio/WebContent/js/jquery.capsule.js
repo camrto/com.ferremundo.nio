@@ -24,7 +24,8 @@
 				)
 			);
 			if(typeOf(v)=="array"){
-				
+				console.log('V');
+				console.log(v);
 				if(regex==null){
 					for(var i=0;i<v.length;i++){
 						html=this.make(v[i],html);
@@ -57,6 +58,9 @@
 			//this.style();
 			//console.log('GEN: ' +html);
 			return html;
+		};
+		Capsule.prototype.getHtml=function(v){
+			return this.gen(v);
 		};
 		Capsule.prototype.make=function(v,html){
 			var ret=html;
@@ -143,6 +147,19 @@
 			//console.log($.toJSON(result)+' for '+$.toJSON(data)+" -> "+$.toJSON(this.defaults));
 			return result;
 		};
+		
+		Capsule.prototype.capFunction=function(data){
+			if(typeOf(data)=="array"){
+				v=[];
+				for(var i=0;i<data.length;i++){
+					for(var key in this.defaults){
+						if(data[i][key])v.push(data[i][key]);
+						else v.push(this.defaults[key]);
+					}
+				}
+			}
+		};
+		
 		Capsule.prototype.construct=function(data){
 			var v;
 			if(typeOf(data)=="array"){
@@ -200,7 +217,7 @@
 			}
 			else {
 				var coresfs=coresfromServer(core);
-				if(coresfs==null)return null;
+				if(coresfs==null)return;
 				capsules=[];
 				for(var i=0;i<coresfs.length;i++){
 					//console.log('adding core '+cores[i].name);
@@ -244,7 +261,12 @@
 				setOptions(coreObj, core.html());
 				this.defaults=coreObj.defaults;
 			}
-			
+			for(var i=0;i<Capsule.capsules.length;i++){
+				if(Capsule.capsules[i].name==theName){
+					//console.log("cap ya en uso .>"+theName);
+					return null;
+				}
+			}
 			Capsule.capsules.push(this);
 			var thethis=this;
 			if(this.hasOwnProperty('css'))this.style();
@@ -296,16 +318,43 @@
 				});*/
 					
 			//}
-
+			//TODO this 'if' is at test stage
+			if(alias==null){
+				var tname=this.name;
+				if(tname.search(/\./)>=0){
+					var tnameSplit=tname.split(".");
+					var _alias=tnameSplit[0];
+					for(var i=1;i<tnameSplit.length;i++){
+						_alias+=tnameSplit[i].charAt(0).toUpperCase()+tnameSplit[i].slice(1);
+					}
+					alias=_alias;
+				}
+				else alias=this.name;//.replace(/\./g,'_');
+			}
+			this.alias=alias;
+			var toPushCapsule=true;
+			var capsuleIndex;
+			for(var i=0;i<Capsule.capsules.length;i++){
+				if(Capsule.capsules[i].alias==alias){
+					toPushCapsule=false;
+					capsuleIndex=i;
+					break;
+				}
+			}
+			//if(toPushCapsule)Capsule.capsules.push(this);
+			//else return Capsule.capsules[capsuleIndex];
 			if(alias!=null){
 				var aliasCap=alias.charAt(0).toUpperCase()+alias.slice(1);
 				if(jQuery.fn.hasOwnProperty(alias)){
 					jQuery.fn[alias]['names'].push(theName);
 				}
 				else{
+					
 					jQuery.fn[alias]=function(data,feed) {
 						var this_=this;
-						Capsule.__tool(this_,data,'append',jQuery.fn[alias]['names'],feed);
+						//console.log("capsule is:");
+						//console.log(jQuery.fn[alias]['names']);
+						Capsule.__tool(this_,data,'append',thethis,feed);
 						return this;
 					};
 					jQuery.fn[alias]['names']=[];
@@ -313,24 +362,29 @@
 
 					jQuery.fn['pre'+aliasCap] = function(data,feed) {
 						var this_=this;
-						Capsule.__tool(this_,data,'prepend',jQuery.fn[aliasCap]['names'],feed);
+						Capsule.__tool(this_,data,'prepend',thethis,feed);//jQuery.fn[alias]['names'],feed);
 						return this;
 					};
 					jQuery.fn['in'+aliasCap] = function(data,feed) {
 						var this_=this;
-						return Capsule.__tool(this_,data,'append',jQuery.fn[aliasCap]['names'],feed);
+						return Capsule.__tool(this_,data,'append',thethis,feed);//,jQuery.fn[alias]['names'],feed);
 					};
-					jQuery.fn['prein'+aliasCap] = function(data,feed) {
+					jQuery.fn['preIn'+aliasCap] = function(data,feed) {
 						var this_=this;
-						return Capsule.__tool(this_,data,'prepend',jQuery.fn[aliasCap]['names'],feed);
+						return Capsule.__tool(this_,data,'prepend',thethis,feed);//,jQuery.fn[alias]['names'],feed);
 					};
 					//TODO no feed no this
-					jQuery.fn['feed'+aliasCap]=function(data){
-						return this.capsule(data,jQuery.fn[aliasCap]['names'],true);
+					jQuery.fn['feed'+aliasCap]=function(method,data){
+
+						return thethis[method](this, data);
+						
+						//return this.capsule(data,jQuery.fn[aliasCap]['names'],true);
 					};
+					/*
 					jQuery.fn['feedpre'+aliasCap]=function(data){
 						return this.precapsule(data,jQuery.fn[aliasCap]['names'],true);
 					};
+					*/
 				}
 			}
 			return this;
@@ -362,20 +416,65 @@
 
 	
 	function coresfromServer(str){
-		var cpc;
-		if(str.match(/.cpc$/)==".cpc")cpc=str;
-		else cpc=str+".cpc";
-		url="http://"+location.host+"/cpc/"+cpc;
+		//TODO improbe this pattern - URL validator
+		var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+		var url=null;
+		if(pattern.test(str)){
+			if(Capsule.capsulesFromURL==null)Capsule.capsulesFromURL=[];
+			
+			for(var i=0;i<Capsule.capsulesFromURL.length;i++){
+				if(Capsule.capsulesFromURL[i]==str){
+					//console.log("url ya en uso "+str);
+					return null;
+				}
+			}
+			Capsule.capsulesFromURL.push(str);
+			url=str;
+		}
+		else {
+			for(var i=0;i<Capsule.capsules.length;i++){
+				if(Capsule.capsules[i].name==str){
+					//console.log("cap ya en uso "+str);
+					return null;
+				}
+			}
+		}
+		if(url==null){
+			var cps;
+			if(str.match(/.js$/)==".js"){
+				cps=str.replace(/.js$/,"").replace(/\./g,"/")+".js";
+			}
+			else {
+				cps=str.replace(/\./g,"/")+".js";
+			}
+			var host=($.capsule.host?$.capsule.host:location.host);
+			var slash="";
+			if(host.match(/\/$/)!="/")slash="/";
+			
+			url=host+slash+
+				"js/"+cps;
+		}
+		//console.log(url);
 		var cores=null;
 		//console.log(url);
 		$.ajax({
 			  url: url,
 			  async:false
-		}).done(function(data){var crs="cores="+data;eval(crs);}).fail(function(){cores=null;});
+		}).done(function(data){
+			var crs="cores="+data;
+			eval(crs);
+			//console.log(crs);
+		}).fail(function(){
+			cores=null;
+		});
+		
 		return cores;
 	};
 	
 	Capsule.getMoreAccurate=function(data,name){
+		//console.log("more accurate for:");
+		//console.log(data);
+		//console.log(name);
 		var theData=typeOf(data)=='array'?data[0]:data;
 		var capsules=[];
 		if(name!=null){
@@ -400,6 +499,8 @@
 			if(cmpt.matchesAll)matchesAll.push(cmpt);
 		}
 		if(matchesAll.length>0){
+			//console.log("matches all:"+matchesAll.length);
+			//console.log(matchesAll);
 			if(matchesAll.length==1)capsule=Capsule.get(matchesAll[0].id);
 			else{
 				var minor=Infinity;
@@ -462,8 +563,10 @@
 				major=cmpt.dataMatches;
 			}
 			if(cmpt==null){
+				//console.log("no capsule found");
 				throw new Error("no capsules matching your request for:\n\tdata='"+$.toJSON(theData)+"'\n\tname='"+$.toJSON(name)+"'");
 			}
+			//else console.log("capsule found");
 			if(cmpt.dataMatches==0)capsule=null;
 			else capsule=Capsule.get(cmpt.id);
 			
@@ -508,7 +611,13 @@
 	
 	Capsule.get=function(name){
 		var capsule=null;
-		if(Capsule.isNumber(name))capsule=Capsule.capsules[name];
+		if(Capsule.isNumber(name)){
+			for(var i=0;i<Capsule.capsules.length;i++)
+				if(Capsule.capsules[i].id==name){
+					capsule=Capsule.capsules[i];
+					break;
+				}
+		}
 		else 
 			for(var i=0;i<Capsule.capsules.length;i++)
 				if(Capsule.capsules[i].name==name){
@@ -549,33 +658,36 @@
 		Capsule.__tool(this_,data,'append',name,feed);
 		return this;
 	};
-	jQuery.fn.precapsule = function(data,name,feed) {
+	jQuery.fn.preCapsule = function(data,name,feed) {
 		var this_=this;
 		Capsule.__tool(this_,data,'prepend',name,feed);
 		return this;
 	};
-	jQuery.fn.incapsule = function(data,name,feed) {
+	jQuery.fn.inCapsule = function(data,name,feed) {
 		var this_=this;
 		return Capsule.__tool(this_,data,'append',name,feed);
 	};
-	jQuery.fn.preincapsule = function(data,name,feed) {
+	jQuery.fn.preInCapsule = function(data,name,feed) {
 		var this_=this;
 		return Capsule.__tool(this_,data,'prepend',name,feed);
 	};
-	
+	/*
 	jQuery.fn.feedcapsule=function(data,name){
 		return this.capsule(data,name,true);
 	};
+	
 	jQuery.fn.feedprecapsule=function(data,name){
 		return this.precapsule(data,name,true);
 	};
-
+	*/
 	//TODO has que el nombre del core sea usado en $().coreName(), $().precoreName()
 	Capsule.__tool=function(this_, data, method,name,feed){
 		feed=feed==null?false:feed;
 		//console.log('data is: '+$.toJSON(data));
 		var capsule=null;
+		//console.log("tool for name="+name);
 		if(typeOf(name)=="string"||typeOf(name)=="array")capsule=Capsule.getMoreAccurate(typeOf(data)=="array"?data[0]:data,name==null?null:name);
+		else if(name==null)capsule=Capsule.getMoreAccurate(typeOf(data)=="array"?data[0]:data,null);
 		else if(typeOf(name)=="object"){
 			capsule=name;
 			//console.log(capsule);
@@ -589,6 +701,7 @@
 			
 			var afterChildren=[];
 			var html=null;
+			
 			if(feed){
 				var chld=capsule.feed(data,method);
 				for(var i=0;i<chld.length;i++){
@@ -601,6 +714,7 @@
 				capsule.hasOwnProperty('init')?capsule.init(data):'';
 				html=capsule.hasOwnProperty('html')?capsule.gen(data):null;
 			}
+			
 			if(html!=null){
 				var htmlObjects=$(html);
 				var length=htmlObjects.length;

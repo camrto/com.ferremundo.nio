@@ -34,6 +34,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import com.ferremundo.InvoiceLog.LogKind;
+import com.ferremundo.db.Inventory;
 import com.ferremundo.db.Mongoi;
 import com.ferremundo.mailing.HotmailSend;
 import com.ferremundo.stt.GSettings;
@@ -114,7 +115,7 @@ public class Wishing extends HttpServlet {
 				LinkedList<InvoiceItem> items=new LinkedList<InvoiceItem>();
 				Client client=null;
 				Client agent=null;
-				Seller seller=null;;
+				Seller seller=null;
 				Shopman shopman=null;
 				Destiny destiny=null;
 				Requester requester=null;
@@ -134,7 +135,8 @@ public class Wishing extends HttpServlet {
 					destiny=new Destiny(jDestiny);
 					requester=new Requester(jRequester);
 					for(int i=jList.length()-1;i>=0;i--){
-						InvoiceItem item=new InvoiceItem(jList.getJSONObject(i));
+						//InvoiceItem item=new InvoiceItem(jList.getJSONObject(i));
+						InvoiceItem item=new Gson().fromJson(jList.getJSONObject(i).toString(), InvoiceItem.class);
 						//System.out.println(item.toJson());
 						items.add(item);
 					}
@@ -250,12 +252,25 @@ public class Wishing extends HttpServlet {
 						invoice.setUpdated(createdLog.getDate());
 						invoice.setPrintedTo(client);
 						invoice.persist();
+						System.out.println("INVOICE:"+new Gson().toJson(invoice));
+						List<InvoiceItem> invoiceItems=invoice.getItems();
+						for(int i=0;i<invoiceItems.size();i++){
+							InvoiceItem item=invoiceItems.get(i);
+							if(Inventory.exists(item)&&!item.isDisabled())
+								Inventory.decrementStored(item);
+						}
 					}
 					else if(command.equals("@oa")){
 						invoice.setUpdated(createdLog.getDate());
 						agent.setAditionalReference(adRef);
 						invoice.setPrintedTo(agent);
 						invoice.persist();
+						List<InvoiceItem> invoiceItems=invoice.getItems();
+						for(int i=0;i<invoiceItems.size();i++){
+							InvoiceItem item=invoiceItems.get(i);
+							if(Inventory.exists(item)&&!item.isDisabled())
+								Inventory.decrementStored(item);
+						}
 					}
 					else if(command.equals("$oc")){
 						InvoiceLog paymentLog=new InvoiceLog(InvoiceLog.LogKind.PAYMENT,invoice.getTotal()-invoice.getDebt(),shopman.getLogin());
@@ -272,6 +287,12 @@ public class Wishing extends HttpServlet {
 								LogKind.PAYMENT.toString(),
 								onlineClient.getShopman().getLogin()
 								));
+						List<InvoiceItem> invoiceItems=invoice.getItems();
+						for(int i=0;i<invoiceItems.size();i++){
+							InvoiceItem item=invoiceItems.get(i);
+							if(Inventory.exists(item)&&!item.isDisabled())
+								Inventory.decrementStored(item);
+						}
 					}
 					else if(command.equals("$oa")){
 						InvoiceLog paymentLog=new InvoiceLog(InvoiceLog.LogKind.PAYMENT,invoice.getTotal()-invoice.getDebt(),shopman.getLogin());
@@ -288,6 +309,12 @@ public class Wishing extends HttpServlet {
 								LogKind.PAYMENT.toString(),
 								onlineClient.getShopman().getLogin()
 								));
+						List<InvoiceItem> invoiceItems=invoice.getItems();
+						for(int i=0;i<invoiceItems.size();i++){
+							InvoiceItem item=invoiceItems.get(i);
+							if(Inventory.exists(item)&&!item.isDisabled())
+								Inventory.decrementStored(item);
+						}
 					}
 					else if(command.equals("$fc")||command.equals("$fa")){
 						InvoiceLog paymentLog=new InvoiceLog(InvoiceLog.LogKind.PAYMENT,invoice.getTotal()-invoice.getDebt(),shopman.getLogin());
@@ -350,7 +377,7 @@ public class Wishing extends HttpServlet {
 							//TODO has parse de mails please
 							if(!invoice.getClient().getEmail().equals("")){
 								HotmailSend.send(
-									"factura "+invoice.getReference()+" $"+((double)Math.round(invoice.getTotal() * 100000) / 100000),
+									"factura "+GSettings.get("INVOICE_SERIAL")+" "+invoice.getReference()+" $"+((double)Math.round(invoice.getTotal() * 100000) / 100000),
 									"FERREMUNDO AGRADECE SU PREFERENCIA",
 									invoice.getClient().getEmail().split(" "),
 									new String[]{
@@ -382,13 +409,23 @@ public class Wishing extends HttpServlet {
 									LogKind.PAYMENT.toString(),
 									onlineClient.getShopman().getLogin()
 									));
+							List<InvoiceItem> invoiceItems=invoice.getItems();
+							for(int i=0;i<invoiceItems.size();i++){
+								InvoiceItem item=invoiceItems.get(i);
+								if(Inventory.exists(item)&&!item.isDisabled())
+									Inventory.decrementStored(item);
+							}
 							return;
 						}
 						else{
 							//TODO has que esta piñates te diga el mensage
-							System.out.println("ERROR - El servidor de facturacion dijo: codigo "+nlist.item(0).getTextContent()+" - mensaje "+doc.getElementsByTagName("mensaje").item(0).getTextContent());
-							response.sendError(response.SC_SERVICE_UNAVAILABLE,"los servidores estan caidos");
-							response.getWriter().print("{\"failed\":\"true\"}");
+							String serverMessage="ERROR - El servidor de facturacion dijo: codigo "+nlist.item(0).getTextContent()+" - mensaje "+doc.getElementsByTagName("mensaje").item(0).getTextContent();
+							System.out.println(serverMessage);
+							response.sendError(response.SC_SERVICE_UNAVAILABLE,serverMessage);
+							response.getWriter().print("{\"failed\":\"true\", \"message\": \""+serverMessage+"\"}");
+							InvoiceLog cancelLog=new InvoiceLog(LogKind.CANCEL, true, onlineClient.getShopman().getLogin());
+							new Mongoi().doPush(Mongoi.INVOICES, "{ \"reference\" : \""+invoice.getReference()+"\"}", "{\"logs\" : "+new Gson().toJson(cancelLog)+" }");
+							
 							return;
 						}
 						//nlist.item(0).
@@ -430,7 +467,7 @@ public class Wishing extends HttpServlet {
 						File pdf= new PDF(invoices[i], pathname).make();
 						//System.out.println("invoices["+i+"]: "+invoices[i].toJson());
 						//TODO this is printing time
-						new PrinterFM01(pdf, PrinterFM01.PRINTER_ONE).print();
+						new PrinterFM01(pdf, GSettings.get("PRINTER_ONE")).print();
 						paths[i]=pathname;
 						fileNames[i]=pdf.getName()+".pdf";
 						//emis.persist(invoices[i]);
@@ -442,13 +479,13 @@ public class Wishing extends HttpServlet {
 					
 					String subject=null;
 					if(invoice.getInvoiceMetaData().getInvoiceType()==InvoiceFM01.INVOICE_TYPE_ORDER){
-						subject="Pedido ";
+						subject="Pedido "+GSettings.get("STORE_ID")+" ";
 					}
 					else if(invoice.getInvoiceMetaData().getInvoiceType()==InvoiceFM01.INVOICE_TYPE_SAMPLE){
-						subject="Cotización ";
+						subject="Cotización "+GSettings.get("STORE_ID")+" ";
 					}
 					else if(invoice.getInvoiceMetaData().getInvoiceType()==InvoiceFM01.INVOICE_TYPE_TAXES_APLY){
-						subject="Factura ";
+						subject="Factura "+GSettings.get("STORE_ID")+":"+GSettings.get("INVOICE_SERIAL")+" ";
 					}
 					subject+=invoice.getInvoiceMetaData().getReference()+" : $"+invoice.getTotal();
 					System.out.println(subject);
@@ -508,13 +545,4 @@ public class Wishing extends HttpServlet {
 		return null;
 	}
 
-	public static void main(String[] args) {
-		EntityManager em=EMF.get(EMF.UNIT_PRODUCT).createEntityManager();
-		List<Product> listStore=em.createNativeQuery("select * from Product",Product.class).getResultList();
-		Query query=em.createQuery("SELECT p FROM Product p WHERE UPPER(p.code) LIKE :keyword ");
-		query.setParameter("keyword","%AD3%");
-		List<Product> res=query.getResultList();
-		System.out.println(res.get(0).toJsonL1());
-		
-	}
 }

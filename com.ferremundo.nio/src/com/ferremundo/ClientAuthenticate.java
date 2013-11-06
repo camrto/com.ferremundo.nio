@@ -24,7 +24,7 @@ public class ClientAuthenticate extends HttpServlet{
 		int clientReference=new Integer(req.getParameter("clientReference"));
 		System.out.println("clientReference:"+clientReference);
 		String password=req.getParameter("password");
-		System.out.println("password:"+password);
+		//System.out.println("password:"+password);
 		String login=req.getParameter("login");
 		System.out.println("lg "+login);
 		boolean lock=new Boolean(req.getParameter("lock"));
