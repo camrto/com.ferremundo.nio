@@ -27,12 +27,12 @@ randomString=function(minWords,maxWords, minLength, maxLength, kind){
     return text;
 };
 setClient_=function(o){
-	new Client_(o.code, o.consummer, o.consummerType,
+	return new Client_(o.code, o.consummer, o.consummerType,
 			o.address, o.interiorNumber, o.exteriorNumber,
 			o.suburb, o.locality, o.city, o.country,
 			o.state, o.email, o.cp, o.rfc, o.tel,
 			o.payment, o.reference, o.aditionalReference);
-	return o;
+	//return o;
 };
 Client_=function(code, consummer, consummerType,
 		address, interiorNumber, exteriorNumber,
@@ -192,25 +192,7 @@ setDestiny=function(id,address){
 	this.address=address;
 	return this;
 };
-function validateRfc(rfcStr) {
-	var strCorrecta;
-	strCorrecta = rfcStr.replace(/\-/g,'');	
-var valid;
-	if (strCorrecta.length == 12){
-	valid = '^(([A-Z]|[a-z]){3})([0-9]{6})((([A-Z]|[a-z]|[0-9]){3}))';
-	}else{
-	valid = '^(([A-Z]|[a-z]|\s){1})(([A-Z]|[a-z]){3})([0-9]{6})((([A-Z]|[a-z]|[0-9]){3}))';
-	}
-	var validRfc=new RegExp(valid);
-	var matchArray=strCorrecta.match(validRfc);
-	if (matchArray==null) {
-		return false;
-	}
-	else{
-		return true;
-	}
-	
-};
+
 
 
 (function ($) {
@@ -413,12 +395,31 @@ clientauthenticateP=function () {
 addRegisterButton=function(){
 	$('body').append("<button type='button' id='registerButton'>registrar usuario</button>");
 	$('#registerButton').bind('click',function(){
+		
 		if(onlineClientHasAccess('SHOPMAN_CREATE')){
-
+			verifyin(
+					function(){
+						registerShopmanIn();
+					},
+					true
+			);/*
+			var passinid='passid'+$.capsule.randomString(1,15,'aA0');
+			passin({
+				id:passinid,
+				success:function(data){
+					$('#'+passinid).remove();
+					registerShopmanIn();
+					
+					//alert("success " +data.authenticated+". #"+passinid+" to be removed")
+					
+				},
+				message:"verificar "+SHOPMAN,
+				escape:true
+			});
 			$('#verify-form').dialog("open");
 			$('#verify-').hide();
 			$('#verifyPassword').hide();
-			
+			*/
 		}
 	});
 };
@@ -576,7 +577,7 @@ function dolog(quantity,unit,description,code,mark,unitPrice){
 				{content: "<div class='unitPrice'>"+unitPrice+"</div>", width:10},
 				{content: "<div class='total'>"+(quantity*unitPrice)+"</div>", width:10}
 				],
-		animate:100,
+		animate:0,
 		class_:"tableingrow"
 	});
 	var row=$('.tableingrow').get(0);
@@ -629,6 +630,7 @@ function onLogChange(){
 	i=0;
 	var total=0;
 	$('.total').each(function(){
+		//$(this).html((q[i]*up[i]).toFixed(2));
 		$(this).html((q[i]*up[i]).toFixed(2));
 		total+=q[i]*up[i];
 		i++;
@@ -676,7 +678,7 @@ function onLogChange(){
 			productsLog[index].quantity=parseFloat($($('.quantity',this).get(0)).html());
 			//alert("quantity "+e.target.nodeName+"\n"+$($('.quantity',this).get(0)).html());
 		}
-		onLogChange();
+		//onLogChange();
 		
 	});
 	total=0;

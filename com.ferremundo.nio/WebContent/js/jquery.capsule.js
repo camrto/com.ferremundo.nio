@@ -6,7 +6,7 @@
 			this[key]=Capsule[key];
 		}
 		Capsule.prototype.gen=function(v){//new RegExp("<[(.*?)\\[>","g")
-			var html=this.html();
+			var html=this.html(v);
 			var arrayFormat=[];
 			var regex;
 			//console.log(this);
@@ -684,6 +684,7 @@
 	Capsule.__tool=function(this_, data, method,name,feed){
 		feed=feed==null?false:feed;
 		//console.log('data is: '+$.toJSON(data));
+		if(data==null)data={};
 		var capsule=null;
 		//console.log("tool for name="+name);
 		if(typeOf(name)=="string"||typeOf(name)=="array")capsule=Capsule.getMoreAccurate(typeOf(data)=="array"?data[0]:data,name==null?null:name);

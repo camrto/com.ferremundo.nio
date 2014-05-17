@@ -36,11 +36,18 @@ public class Updater extends HttpServlet{
 	
 	
 	public static void main(String[] args) {
-		new Updater().update();
+
+
+	    String s = "  \t\t\r\t\r this has spaces at the beginning and at the end    \t\r  ";
+	    String result = s.replaceAll("^\\s+|\\s+$", "");
+
+	    System.out.println("'"+result+"'");
+		//new Updater().update();
 	}
 	
-	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response){
+	//@Override
+	protected void doGett(HttpServletRequest request, HttpServletResponse response){
+		/*
 		response.setCharacterEncoding("utf-8");
 		response.setContentType("application/json");
 		
@@ -50,16 +57,40 @@ public class Updater extends HttpServlet{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
 	}
 	
-	private String update(){
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+		throws ServletException, IOException{
+		resp.setCharacterEncoding("utf-8");
+		resp.setContentType("application/json");
+		int clientReference=new Integer(req.getParameter("clientReference"));
+		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
+		if(!(onlineClient.isAuthenticated(req)&&(
+				onlineClient.hasAccess(AccessPermission.PRODUCT_UPDATE)||
+				onlineClient.hasAccess(AccessPermission.ROOT)
+				))){
+			resp.sendError(resp.SC_UNAUTHORIZED,"acceso denegado");return;
+		}
+		try {
+			resp.getWriter().print(update(req,resp));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private String update(HttpServletRequest req, HttpServletResponse resp){
+		int clientReference=new Integer(req.getParameter("clientReference"));
+		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
 		String response="";
 		
 		
 		File file = new File(GSettings.get("SPREADSHEET_DB_FILE"));//"/home/dios/FERREMUNDO/BD/BASE.ods");
 		Sheet sheet=null;
 		try {
-			sheet = SpreadSheet.createFromFile(file).getSheet(4);
+			sheet = SpreadSheet.createFromFile(file).getSheet(new Integer(GSettings.get("SPREADSHEET_DB_FILE_PRODUCTS_SHEET")));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -78,29 +109,50 @@ public class Updater extends HttpServlet{
 			String str=sheet.getCellAt("B"+i).getTextValue();
 			if(str.equals(""))cont=false;
 			else{
-				String mark=sheet.getCellAt("A"+i).getTextValue();
-				String code=sheet.getCellAt("B"+i).getTextValue();
-				String unit=sheet.getCellAt("C"+i).getTextValue();
-				String description=sheet.getCellAt("D"+i).getTextValue();
-				float unitPrice=new Float(sheet.getCellAt("F"+i).getTextValue());
-				int productPriceKind=new Integer(sheet.getCellAt("H"+i).getTextValue());
+				String mark=sheet.getCellAt("A"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
+				String code=sheet.getCellAt("B"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
+				String unit=sheet.getCellAt("C"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
+				String description=sheet.getCellAt("D"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
+				float unitPrice=new Float(sheet.getCellAt("E"+i).getTextValue());
+				int productPriceKind=new Integer(sheet.getCellAt("F"+i).getTextValue());
 				Product product= new Product(code, unitPrice, unit, mark,description, productPriceKind);
-				String pstr=code+" "+unit+" "+mark+" "+description;
+				//String pstr=code+" "+unit+" "+mark+" "+description;
 				String hash=product.getHash();//MD5.get(pstr);
 				product.setHash(hash);
 				DBObject obj=new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"hash\" : \""+hash+"\"}");
 				if(obj==null){
-					product.setId(new Long(new Mongoi().doIncrement(Mongoi.PRODUCTS_COUNTER, "{ \"unique\" : \"unique\" }","id")));
-					new Mongoi().doInsert(Mongoi.PRODUCTS, new Gson().toJson(product));
-					response+="inserting new product -> "+new Gson().toJson(product)+"\n";
+					DBObject objByCode=new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}");
+					if(objByCode==null){
+						product.setId(new Long(new Mongoi().doIncrement(Mongoi.PRODUCTS_COUNTER, "{ \"unique\" : \"unique\" }","id")));
+						new Mongoi().doInsert(Mongoi.PRODUCTS, new Gson().toJson(product));
+						response+="inserting new product -> "+new Gson().toJson(product)+"\n";
 					
-					System.out.println("inserting new product -> "+new Gson().toJson(product));
+						System.out.println("inserting new product -> "+new Gson().toJson(product));
+					}
+					else{
+						String updtn="updating '"+new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}")+"'";
+						//System.out.println("updating '"++"'");
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"hash\" : \""+hash+"\" }");
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"mark\" : \""+mark+"\" }");
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"description\" : \""+description+"\" }");
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unit\" : \""+unit+"\" }");
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"productPriceKind\" : "+productPriceKind+" }");
+						float oldPrice=new Float(objByCode.get("unitPrice").toString());
+						if(oldPrice!=unitPrice){
+							new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unitPrice\" : "+unitPrice+" }");
+							new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"priceHistory\" : {\"unitPrice\" : "+oldPrice+", \"deprecatedDate\" : "+new Date().getTime()+", \"updater\" : \""+onlineClient.getShopman().getLogin()+"\" }}");
+							//response+="updating price("+unitPrice+") for -> "+obj+"\n";
+						}
+						updtn+= "\n\tto '"+new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}")+"'";
+						response+=updtn+"\n";
+						//System.out.println("\tto '"+new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}")+"'");
+					}
 				}
 				else {
 					float oldPrice=new Float(obj.get("unitPrice").toString());
 					if(oldPrice!=unitPrice){
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"hash\" : \""+hash+"\"}", "{\"unitPrice\" : "+unitPrice+" }");
-						new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"hash\" : \""+hash+"\"}", "{\"priceHistory\" : {\"unitPrice\" : "+oldPrice+", \"deprecatedDate\" : "+new Date().getTime()+" }}");
+						new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"hash\" : \""+hash+"\"}", "{\"priceHistory\" : {\"unitPrice\" : "+oldPrice+", \"deprecatedDate\" : "+new Date().getTime()+", \"updater\" : \""+onlineClient.getShopman().getLogin()+"\" }}");
 						response+="updating price("+unitPrice+") for -> "+obj+"\n";
 					}
 					//System.out.println("coincidence -> "+new Gson().toJson(product));

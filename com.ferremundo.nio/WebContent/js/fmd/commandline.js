@@ -7,7 +7,7 @@
 		$('#commands').autocomplete('close');
 		this.value=$('#commands').val().replace(/^\s\s*/, '').replace(/\s\s*$/, '');		//value
 		//clean
-		$('#commands').SetBubblePopupOptions({innerHtml:"comandos"});
+		//$('#commands').SetBubblePopupOptions({innerHtml:"comandos"});
 		//alert("'"+this.value+"'");
 		
 		var splited=this.value.split(" ");
@@ -125,6 +125,10 @@
 			$('#commands').ShowBubblePopup( {innerHtml: 'facturar documento <b>'+this.args[0]+'</b>'} );
 			this.kind="facture";
 		}
+		else if(this.command=='_inventario'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'se inventaríara la lista con los costos<b>'+this.args[0]+'</b>'} );
+			this.kind="facture";
+		}
 		else if(this.command=='@r'||this.command=='@rl'){
 			if(this.command=='@r'){
 				$('#commands').ShowBubblePopup( {innerHtml: 'traer documento <b>'+this.args[0]+'</b>'} );
@@ -180,6 +184,12 @@
 		}
 		else if(this.command=='@s'){
 			this.kind="searchinvoices";
+		}
+		else if(this.command=='@actualizap'){
+			this.kind="updateproducts";
+		}
+		else if(this.command=='@pruebap'){
+			this.kind="testproducts";
 		}
 		else if(this.command=='@j'){
 			$('#commands').ShowBubblePopup( {innerHtml: 'consultar caja'} );

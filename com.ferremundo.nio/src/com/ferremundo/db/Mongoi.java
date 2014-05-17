@@ -83,7 +83,7 @@ public class Mongoi {
 	public static final int UPDATE=0;
 	
 	private static final DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-	private static final String EXPRIRATION_DATE="2013/12/21";
+	private static final String EXPRIRATION_DATE="2113/12/21";
 	
 	public Mongoi(){
 		if(mongo==null){
@@ -521,7 +521,7 @@ public class Mongoi {
 			strl[i]=list.get(i);
 			System.out.println("'"+strl[i]+"'<-");
 		}
-		DBCursor cursor=doFindLike(INVOICES, new String[]{"reference","client.consummer","client.address","client.rfc","items.code","items.mark","items.description"}, strl,10).sort(new BasicDBObject("$natural",-1));
+		DBCursor cursor=doFindLike(INVOICES, new String[]{"reference","client.consummer","agent.consummer","client.address","agent.address","client.rfc","agent.rfc","items.code","items.mark","items.description"}, strl,10).sort(new BasicDBObject("$natural",-1));
 		System.out.println(cursor.count()+" hallados");
 		return cursor;
 	}

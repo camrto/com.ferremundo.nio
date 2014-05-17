@@ -73,13 +73,13 @@ public class InvoicePort extends HttpServlet{
 				String args=request.getParameter("args");
 				if(!args.equals("")){
 					String[] argsspl=URLDecoder.decode(args,"utf-8").split(" ");
-					if(argsspl.length==3){
+					if(argsspl.length==2){
 						String ref=argsspl[0].toUpperCase();
-						String cancelIssue="";
+						/*String cancelIssue="";
 						for(int i=3;i<argsspl.length;i++){
 							if(i!=3)cancelIssue+=" ";
 							cancelIssue+=argsspl[i];
-						}
+						}*/
 						DBObject oInvoice=new Mongoi().doFindOne(Mongoi.INVOICES, "{ \"reference\" : \""+ref+"\" }");
 						if(oInvoice==null){
 							response.setStatus( HttpServletResponse.SC_BAD_REQUEST);
@@ -93,7 +93,7 @@ public class InvoicePort extends HttpServlet{
 						}
 						catch(NumberFormatException exception){
 							response.setStatus( HttpServletResponse.SC_BAD_REQUEST);
-							response.getWriter().write("ERROR: monto inválido "+argsspl[1]);
+							response.getWriter().write("ERROR: monto inválido '"+argsspl[1]+"'");
 							return;
 						}
 						Float oldAgentPayment=new Float(oInvoice.get("agentPayment").toString());

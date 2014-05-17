@@ -59,7 +59,7 @@ public class GetInvoice extends HttpServlet{
 				DBObject fromDB=new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"hash\" : \""+hash+"\" }");
 				//System.out.println((new Integer(ob.get("id").toString())==-1)+"fromDB "+fromDB);
 				if(ob.containsField("id")){
-					if(new Integer(ob.get("id").toString())==-1)System.out.println("fuck");
+					if(new Integer(ob.get("id").toString())==-1)System.out.println("id equals '-1'");
 					else{
 						if(fromDB!=null){
 							ob.put("id", new Long(fromDB.get("id").toString()));

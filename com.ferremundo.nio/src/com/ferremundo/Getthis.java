@@ -45,18 +45,18 @@ public class Getthis extends HttpServlet{
 			
 			
 			String list=req.getParameter("list");
-			String clientID=req.getParameter("id");
+			String clientCode=req.getParameter("code");
 			String ct=req.getParameter("consummerType");
 			Integer consummerType=null;
 			if(ct!=null)consummerType=new Integer(ct);
-			System.out.println("list: "+list+" code: "+clientID);
+			System.out.println("list: "+URLDecoder.decode(list,"utf-8")+" code: "+clientCode);
 			try{
-				if(null!=list&&null!=clientID){
+				if(null!=list&&null!=clientCode){
 					String decList=URLDecoder.decode(list,"utf-8");
-					String decCode=URLDecoder.decode(clientID,"utf-8");
+					String decCode=URLDecoder.decode(clientCode,"utf-8");
 					System.out.println(decList+"\n"+decCode);
 					//Client client=ClientsStore.instance().getClientByCode(decCode);
-					if(consummerType==null)consummerType=new Integer(new Mongoi().doFindOne(Mongoi.CLIENTS, "{ \"id\": "+clientID+"}").get("consummerType").toString());
+					if(consummerType==null)consummerType=new Integer(new Mongoi().doFindOne(Mongoi.CLIENTS, "{ \"code\": \""+clientCode+"\"}").get("consummerType").toString());
 					//int consummerType=client.getConsummerType();
 					JSONArray jsa= new JSONArray(decList);
 					int length=jsa.length();

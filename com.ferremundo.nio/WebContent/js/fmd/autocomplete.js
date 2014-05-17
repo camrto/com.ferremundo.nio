@@ -177,8 +177,8 @@ autocomplete=function(input){
 					client=new setClient_(clients[i]);
 					console.log('client');
 					console.log(client);
-					$('#vips option').eq(client.consummerType-1).attr('selected', 'selected');
-					var id=client.id;
+					//$('#vips option').eq(client.consummerType-1).attr('selected', 'selected');
+					var code=client.code;
 					//alert($.URLEncode(jsonsrt));
 					//alert($.toJSON(productsLog));
 					for(var j=0;j<productsLog.length;j++){
@@ -188,7 +188,7 @@ autocomplete=function(input){
 							url: "getthis",
 							data: {
 								list:encodeURIComponent(jsonsrt),
-								id:id,
+								code:code,
 								token : TOKEN,
 		    					clientReference: CLIENT_REFERENCE
 							},
@@ -198,6 +198,8 @@ autocomplete=function(input){
 							},
 							type:'POST',
 							success: function(data) {
+								console.log("data");
+								console.log(data);
 								//alert(productsLog[0].quantity+" ->"+this.index);
 								var j=this.index;
 								if(productsLog[j].id!="-1"){

@@ -5,7 +5,7 @@ xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 
- <!-- 
+
 <security-constraint>
     <web-resource-collection>
         <web-resource-name>secured page</web-resource-name>
@@ -15,7 +15,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
     </user-data-constraint>
 </security-constraint>
- -->
+
 <!-- ==== Default Session Configuration ==== -->
 <!-- You can set the default session timeout (in minutes) for all newly   -->
 <!-- created sessions by modifying the value below.                       -->

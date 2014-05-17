@@ -39,13 +39,14 @@
 <script type="text/javascript" src="cps/tableing.cps.js"></script>
 <script type="text/javascript" src="cps/global.cps.js"></script>
 
-<script type="text/javascript" src="js/jquery.idle-timer.js"></script>
+<script type="text/javascript" src="js/jquery.idle.min.js"></script>
 <script type="text/javascript" src="js/jquery-bubble-popup-v3.min.js"></script>
 
-<script type="text/javascript" src="js/util.js"></script>
+<script type="text/javascript" src="js/fmd/util.js"></script>
 <script type="text/javascript" src="js/fmd/commandline.js"></script>
 <script type="text/javascript" src="js/fmd/autocomplete.js"></script>
 <script type="text/javascript" src="js/fmd/fun.js"></script>
+<script type="text/javascript" src="js/fmd/auth.js"></script>
 
 
 <script type="text/javascript" src="js/jspdf/jspdf.js"></script>
@@ -94,7 +95,7 @@ var inputValue;
 var products;
 var productsLog=[];
 var clients;
-var client=new setClient_("-1","PUBLICO EN GRAL",1,".","MORELIA",".","MICH",".",".","PARA FACTURAR",".",0,"");
+var client=new Client_("-1","PUBLICO EN GRAL",1,".","MORELIA",".","MICH",".",".","PARA FACTURAR",".",0,"");
 var agent=null;
 var shopman=new setShopman("unauthorized");
 var metadata=new setMetadata(1);// INVOICE_TYPE_ORDER
@@ -107,13 +108,13 @@ var key_down = $.Event("keydown.autocomplete"); key_down.keyCode =  $.ui.keyCode
 var keyup = $.Event("keydown.autocomplete"); keyup.keyCode =  $.ui.keyCode.UP;
 var keyenter = $.Event("keydown.autocomplete"); keyenter.keyCode =  $.ui.keyCode.ENTER;
 var keyenterUp = $.Event("keyup.autocomplete"); keyenterUp.keyCode =  $.ui.keyCode.ENTER;
-
+console.log(client);
 
 $(document).ready(function(){
 	
-	$('#commands').CreateBubblePopup({innerHtml: 'comandos'});
+	//$('#commands').CreateBubblePopup({innerHtml: 'comandos'});
 	autocomplete('#commands');
-	$("#login-form").dialog({
+	/*$("#login-form").dialog({
         autoOpen: false,
         //height: 300,
         //width: 350,
@@ -134,8 +135,46 @@ $(document).ready(function(){
 			else resetClient();
 			$('#login-form').dialog("option",'hide','explode');
         }
-    });
-
+    });*/
+    var authid='authid'+$.capsule.randomString(1,15,'aA0');
+	authin({
+		id:authid, 
+		success:function(data){
+			//alert("success " +data.authenticated+". #"+authid+" to be removed");
+			$('#'+authid).remove();
+			AUTHORIZED=true;
+			if(onlineClientHasAccess('SHOPMAN_CREATE')){
+				addRegisterButton();
+			}
+			//$.idleTimer(1000);
+			//$( document ).idleTimer( 1000 );
+			//$(document).bind("idle.idleTimer", function(){
+			$( document ).idle({
+				idle:1000*60*5,
+				onIdle: function(){
+					var doIdle=document.isIdle?false:true;
+					if(doIdle)document.isIdle=true;
+					else return;
+					lockin();
+					var passinid='passid'+$.capsule.randomString(1,15,'aA0');
+					passin({
+						id:passinid,
+						success:function(data){
+							AUTHORIZED=true;
+							//alert("success " +data.authenticated+". #"+passinid+" to be removed")
+							$('#'+passinid).remove();
+							document.isIdle=false;
+							$('#commands').focus();
+						},
+						message:"desbloquear "+SHOPMAN
+					});
+				}
+			});
+			$('#commands').empty().focus();
+		},
+		message:"autenticarse"
+	});
+	/*
 	$( "#lock-form" ).dialog({
         autoOpen: false,
         //height: 300,
@@ -159,8 +198,8 @@ $(document).ready(function(){
             $('#unlockpassword').focus();
         }
     });
-
-	$( "#register-form" ).dialog({
+*/
+/*	$( "#register-form" ).dialog({
         autoOpen: false,
         //height: 300,
         //width: 350,
@@ -234,6 +273,7 @@ $(document).ready(function(){
         close: function() {
         }
     });
+	*/
 	$('#editproduct-6').keyup(function(event){
 		if(event.keyCode==$.ui.keyCode.ENTER){
 			var e1=$('#editproduct-1').val();
@@ -266,6 +306,7 @@ $(document).ready(function(){
 			onLogChange();
 		}
 	});
+	/*
 	$('#password').unbind('keydown').unbind('keypress').bind('keypress',function(event){
 		if(event.which!=13)return;
 		$( "#login-form" ).dialog("option", "buttons")['login'].apply($( "#login-form" )[0]);
@@ -291,14 +332,29 @@ $(document).ready(function(){
 	$('#unlockpassword').focus(function(){
 	    this.select();
 	});
-    
+    */
 	$('#lockbutton').click(function(){
-		lock();
+		var doIdle=document.isIdle?false:true;
+		if(doIdle)document.isIdle=true;
+		else return;
+		lockin();
+		var passinid='passid'+$.capsule.randomString(1,15,'aA0');
+		passin({
+			id:passinid,
+			success:function(data){
+				AUTHORIZED=true;
+				//alert("success " +data.authenticated+". #"+passinid+" to be removed")
+				$('#'+passinid).remove();
+				document.isIdle=false;
+				$('#commands').focus();
+			},
+			message:"desbloquear "+SHOPMAN
+		});
 	});
 	
 
 	
-	authenticate();
+	//authenticate();
 	//resetClient();
 	///INIT
 
@@ -328,7 +384,7 @@ $(document).ready(function(){
 			return;
 		}
 		//alert(event.which);
-		$('#commands').SetBubblePopupOptions({innerHtml:"comandos"});
+		//$('#commands').SetBubblePopupOptions({innerHtml:"comandos"});
 		$('#commands').HideBubblePopup();
 
 		//console.log(commandline.kind);
@@ -413,6 +469,7 @@ $(document).ready(function(){
 			$('#commands').val('');
 		}
 		else if(commandline.kind=='editclient'){
+			/*		
 			$('#editclient-consummer').val('');
 			$('#editclient-consummerType').val(1);
 			$('#editclient-address').val('');
@@ -430,9 +487,12 @@ $(document).ready(function(){
 			$('#editclient-payment').val(0);
 			$('#editclient').dialog("open");
 			$('#editclient-consummer').focus();
-			$('#commands').val('');
+			*/
+			addConsummerIn('clients');
+			$('commands').empty().focus();
 		}
 		else if(commandline.kind=='editagent'){
+			/*
 			$('#editagent-consummer').val('');
 			$('#editagent-consummerType').val(1);
 			$('#editagent-address').val('');
@@ -450,7 +510,9 @@ $(document).ready(function(){
 			$('#editagent-payment').val(0);
 			$('#editagent').dialog("open");
 			$('#editagent-consummer').focus();
-			$('#commands').val('');
+			*/
+			addConsummerIn('agents');
+			$('commands').empty().focus();
 		}
 		else if(commandline.kind=='sample'){
 			if(agent==null||client==null){
@@ -484,6 +546,8 @@ $(document).ready(function(){
 				}
 				*/
 				//alert(" kind "+commandline.kind);
+				//CONFIRM
+				
 				$.blockUI({ message: '<h1><img src="img/wait.gif" /> esperar...</h1>' });
 				$.ajax({
 					type: 'POST',
@@ -1037,7 +1101,7 @@ $(document).ready(function(){
 							},
 							dataType: "json",
 							error: function(jqXHR, textStatus, errorThrown){
-								alert(textStatus);
+								alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
 							},
 							success: function(data) {
 								//alert(productsLog[0].quantity+" ->"+this.index);
@@ -1066,16 +1130,17 @@ $(document).ready(function(){
 							}
 						});
 					}
+					$('#editclient').dialog('close');
+					$('commands').empty().focus();
 				},
-				error : function(jqXHR, textStatus, errorThrown){
-					alert("maldito error-> status :"+textStatus+". thrown : "+errorThrown);
+				error: function(jqXHR, textStatus, errorThrown){
+					alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
 				},
 				dataType:"json"
 			});
 			
 			//alert($.toJSON(client));
-			$('#editclient').dialog('close');
-			$('commands').focus();
+			
 			
 		}
 	});
@@ -1110,10 +1175,16 @@ $(document).ready(function(){
 					agent:true,
 					token : TOKEN,
 					clientReference: CLIENT_REFERENCE
+				},
+				error: function(jqXHR, textStatus, errorThrown){
+					alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
+				},
+				success: function(data) {
+					$('#editagent').dialog('close');
+					$('commands').empty().focus();
 				}
 			});
-			$('#editagent').dialog('close');
-			$('commands').focus();
+			
 		}
 	});
 	//$('#editclient').hide();
@@ -1308,6 +1379,100 @@ $(document).ready(function(){
 		<input id="editproduct-5"/>
 		<input id="editproduct-6"/>
 	</div>
+
+</div>
+
+<div id="client-accordion" style="height: auto;">
+	<p><a href="#" id="client" class="accordion-e"></a></p>
+	<div>
+	<div id="client-address" class="accordion-e"></div>
+	<div id="client-city" class="accordion-e"></div>
+	<div id="client-state" class="accordion-e"></div>
+	<div id="client-cp" class="accordion-e"></div>
+	<div id="client-rfc" class="accordion-e"></div>
+	<div id="client-tel" class="accordion-e"></div>
+	<div id="client-email" class="accordion-e"></div>
+	<div id="client-country" class="accordion-e"></div>
+
+	</div>
+</div>
+<div id="agent-accordion" style="height: auto;">
+	<p><a href="#" id="agent" class="accordion-e"></a></p>
+	<div>
+	<div id="agent-address" class="accordion-e"></div>
+	<div id="agent-city" class="accordion-e"></div>
+	<div id="agent-state" class="accordion-e"></div>
+	<div id="agent-cp" class="accordion-e"></div>
+	<div id="agent-rfc" class="accordion-e"></div>
+	<div id="agent-tel" class="accordion-e"></div>
+	<div id="agent-email" class="accordion-e"></div>
+	<div id="agent-country" class="accordion-e"></div>
+
+	</div>
+</div>
+
+<div style="position: relative; width: 100%">
+<div id="log" style="height: 500px; width: 100%; overflow: auto;" class="ui-widget-content"></div>
+<div id="records"></div>
+</div>
+
+<div id="resultset" style="width: 100%;" class=""></div>
+<div id="logResultset" style="width: 100%;" class=""></div>
+<!--
+<div id="login-form" title="Login">
+    <form>
+    <fieldset>
+        <label for="name">login</label>
+        <input type="text" name="login" id="login" class="text ui-widget-content ui-corner-all" />
+        <label for="password">password</label>
+        <input type="password"  id="password" value="" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+
+<div id="lock-form" title="Locked">
+    <form>
+    <fieldset>
+    	<label for="name"></label>
+        <input type="text" name="logn" id="logn" class="text ui-widget-content ui-corner-all" style="visibility=hidden"/>
+        <label for="unlockpassword">password</label>
+        <input type="password"  id="unlockpassword" value="" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+
+<div id="verify-form" title="password">
+    <form>
+    <fieldset>
+    	<label for="name"></label>
+        <input type="text" name="verify" id="verify-" class="text ui-widget-content ui-corner-all" style="visibility=hidden"/>
+        <label for="verifypassword">password</label>
+        <input type="password"  id="verifypassword" value="" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+
+<div id="register-form" title="Locked">
+    <form>
+    <fieldset>
+    	<label for="newUserName">nombre completo</label>
+        <input type="text" name="newUserName" id="newUserName" class="text ui-widget-content ui-corner-all" style="visibility=hidden"/>
+        <label for="newUserLogin">login</label>
+        <input type="text" name="newUserLogin" id="newUserLogin" class="text ui-widget-content ui-corner-all" style="visibility=hidden"/>
+        <label for="newUserPassword">password</label>
+        <input type="password"  id="newUserPassword" value="" class="text ui-widget-content ui-corner-all" />
+    	<label for="reNewUserPassword">re password</label>
+        <input type="password"  id="reNewUserPassword" value="" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+
+
+<div id="unauthorizedAlert" title="Acceso Denegado">
+    <p>
+        Escribe correctamente tu login y/o password
+    </p>
+</div>
 	<div id="editclient" title="Crear Cliente">
 		<form>
 		<fieldset>
@@ -1410,101 +1575,7 @@ $(document).ready(function(){
     	</fieldset>
     	</form>
 	</div>
-</div>
-
-<div id="client-accordion" style="height: auto;">
-	<p><a href="#" id="client" class="accordion-e"></a></p>
-	<div>
-	<div id="client-address" class="accordion-e"></div>
-	<div id="client-city" class="accordion-e"></div>
-	<div id="client-state" class="accordion-e"></div>
-	<div id="client-cp" class="accordion-e"></div>
-	<div id="client-rfc" class="accordion-e"></div>
-	<div id="client-tel" class="accordion-e"></div>
-	<div id="client-email" class="accordion-e"></div>
-	<div id="client-country" class="accordion-e"></div>
-
-	</div>
-</div>
-<div id="agent-accordion" style="height: auto;">
-	<p><a href="#" id="agent" class="accordion-e"></a></p>
-	<div>
-	<div id="agent-address" class="accordion-e"></div>
-	<div id="agent-city" class="accordion-e"></div>
-	<div id="agent-state" class="accordion-e"></div>
-	<div id="agent-cp" class="accordion-e"></div>
-	<div id="agent-rfc" class="accordion-e"></div>
-	<div id="agent-tel" class="accordion-e"></div>
-	<div id="agent-email" class="accordion-e"></div>
-	<div id="agent-country" class="accordion-e"></div>
-
-	</div>
-</div>
-
-<div style="position: relative; width: 100%">
-<div id="log" style="height: 500px; width: 100%; overflow: auto;" class="ui-widget-content"></div>
-<div id="records"></div>
-</div>
-
-<div id="resultset" style="width: 100%;" class=""></div>
-<div id="logResultset" style="width: 100%;" class=""></div>
-
-
-<div id="login-form" title="Login">
-    <form>
-    <fieldset>
-        <label for="name">login</label>
-        <input type="text" name="login" id="login" class="text ui-widget-content ui-corner-all" />
-        <label for="password">password</label>
-        <input type="password"  id="password" value="" class="text ui-widget-content ui-corner-all" />
-    </fieldset>
-    </form>
-</div>
-
-<div id="lock-form" title="Locked">
-    <form>
-    <fieldset>
-    	<label for="name"></label>
-        <input type="text" name="logn" id="logn" class="text ui-widget-content ui-corner-all" style="visibility=hidden"/>
-        <label for="unlockpassword">password</label>
-        <input type="password"  id="unlockpassword" value="" class="text ui-widget-content ui-corner-all" />
-    </fieldset>
-    </form>
-</div>
-
-<div id="verify-form" title="admin password">
-    <form>
-    <fieldset>
-    	<label for="name"></label>
-        <input type="text" name="verify" id="verify-" class="text ui-widget-content ui-corner-all" style="visibility=hidden"/>
-        <label for="verifypassword">password</label>
-        <input type="password"  id="verifypassword" value="" class="text ui-widget-content ui-corner-all" />
-    </fieldset>
-    </form>
-</div>
-
-<div id="register-form" title="Locked">
-    <form>
-    <fieldset>
-    	<label for="newUserName">nombre completo</label>
-        <input type="text" name="newUserName" id="newUserName" class="text ui-widget-content ui-corner-all" style="visibility=hidden"/>
-        <label for="newUserLogin">login</label>
-        <input type="text" name="newUserLogin" id="newUserLogin" class="text ui-widget-content ui-corner-all" style="visibility=hidden"/>
-        <label for="newUserPassword">password</label>
-        <input type="password"  id="newUserPassword" value="" class="text ui-widget-content ui-corner-all" />
-    	<label for="reNewUserPassword">re password</label>
-        <input type="password"  id="reNewUserPassword" value="" class="text ui-widget-content ui-corner-all" />
-    </fieldset>
-    </form>
-</div>
-
-
-<div id="unauthorizedAlert" title="Acceso Denegado">
-    <p>
-        Escribe correctamente tu login y/o password
-    </p>
-</div>
-
+-->
 </body>
 
 </html>

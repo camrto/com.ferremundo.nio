@@ -89,8 +89,9 @@ public class InvoiceCancelling extends HttpServlet{
 									g.getKey("CERTIFICATE"),
 									g.getKey("PRIVATE_KEY"),
 									g.getKey("PRIVATE_KEY_PASS"));
-							String cancel=rhino.cancelar(g.getKey("INVOICE_CERTIFICATE_AUTHORIRY_USER"), 
-									g.getKey("INVOICE_CERTIFICATE_AUTHORIRY_PASS"),
+							rhino.setOpenSSL(g.getKey("SSL"));
+							String cancel=rhino.cancelar(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), 
+									g.getKey("INVOICE_CERTIFICATE_AUTHORITY_PASS"),
 									g.getKey("INVOICE_SENDER_TAX_CODE"),
 									uuid);
 							document = builder.parse(new ByteArrayInputStream(cancel.getBytes()));

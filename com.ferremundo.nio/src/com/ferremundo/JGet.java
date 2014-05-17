@@ -3,15 +3,19 @@ package com.ferremundo;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class JGet {
 
@@ -91,10 +95,37 @@ public class JGet {
 
 	}
 	
+	public String post(String url, String parameters) throws Exception {
+		URL obj = null;
+		HttpsURLConnection con=null;
+		obj=new URL(url);
+		con= (HttpsURLConnection) obj.openConnection();
+		con.setRequestMethod("POST");
+		con.setDoOutput(true);
+		DataOutputStream wr=null;
+		wr= new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(parameters);
+		wr.flush();
+		wr.close();
+		int responseCode = con.getResponseCode();
+		BufferedReader in = new BufferedReader(
+		        new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+ 
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+ 
+		return response.toString();
+		
+	}
+	
 	public static void main(String[] args) {
 		try {
-			JGet.download("http://google.com","/home/lucifer/tmp/google.com");
-		} catch (IOException e) {
+			System.out.println(new JGet().post("https://localhost:8443/com.ferremundo.nio/",""));
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
