@@ -31,7 +31,7 @@ public class SearchInvoices extends HttpServlet{
 		if(!(onlineClient.isAuthenticated(req)&&(
 				onlineClient.hasAccess(AccessPermission.GLOBAL_SEARCH)||
 				onlineClient.hasAccess(AccessPermission.BASIC)||
-				onlineClient.hasAccess(AccessPermission.ROOT)
+				onlineClient.hasAccess(AccessPermission.ADMIN)
 				))){
 			resp.sendError(resp.SC_UNAUTHORIZED,"acceso denegado");return;
 		}

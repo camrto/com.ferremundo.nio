@@ -12,7 +12,8 @@
 <script type="text/javascript" src="js/jquery.capsule.js"></script>
 <script type="text/javascript" src="js/fmd/auth.js"></script>
 <script type="text/javascript">
-<%
+/*
+
 OnlineClients clients= OnlineClients.instance();
 String ipAddres=request.getRemoteAddr();
 out.println("\tvar IP_ADDRESS='"+ipAddres+"';");
@@ -21,11 +22,17 @@ out.println("\tvar CLIENT_REFERENCE="+clientReference+";");
 OnlineClient onlineClient=clients.get(clientReference);
 out.println("\tvar TOKEN='"+onlineClient.getToken()+"';");
 out.println("\tvar SHOPMAN='';");
+out.println("\tvar SID='"+request.getSession().getId()+"';");
 request.getSession().setMaxInactiveInterval(60*60*8);
-
-%>
+*/
+//var ipAddres="${pageContext.request.getRemoteAddr()}";
 var AUTHORIZED=false;
-
+var TOKEN="${token}";
+var CLIENT_REFERENCE="${clientReference}";
+var BACK="${back}";
+var SHOPMAN='';
+var CONTEXT_PATH="${pageContext.request.contextPath}";
+//{pageContext.request.getSession().setMaxInactiveInterval(60*60*8);};
 
 $(document).ready(function(){
 	/*var passinid='passid'+$.capsule.randomString(1,15,'aA0');
@@ -45,6 +52,14 @@ $(document).ready(function(){
 		id:authid, 
 		success:function(data){
 			//alert("success " +data.authenticated+". #"+authid+" to be removed");
+			var url = BACK;
+			$('<form action="' + url + '" method="post">' +
+  				'<input type="text" name="clientReference" value="' + CLIENT_REFERENCE + '" />' +
+  				'<input type="text" name="token" value="' + TOKEN + '" />' +
+  				'<input type="text" name="shopman" value="{name:"' + data.shopman.name + '", login:"'+data.shopman.login+'""} />' +
+  				'</form>').appendTo($(document.body)) //it has to be added somewhere into the <body>
+  		        .submit();
+			/*
 			$('#'+authid).remove();
 			AUTHORIZED=true;
 			//$.idleTimer(1000);
@@ -69,18 +84,22 @@ $(document).ready(function(){
 						message:"desbloquear "+SHOPMAN
 					});
 				}
-			});
+			});*/
 			
 		},
-		message:"autenticarse"
+		message:"autenticarse",
+		error:function(jqXHR, textStatus, errorThrown){
+			alert(jqXHR.responseText+" - "+textStatus+" - "+errorThrown);
+		}
 	});
-	confirmIn({
+	/*confirmIn({
 		content:'seguro que eres un hijo de la chingada?', 
 		ok:function(){alert("ok");},
 		cancel:function(){alert("cancel");},
 		okValue:"si",
 		cancelValue:"no"
 		});
+	*/
 });
 </script>
 </head>

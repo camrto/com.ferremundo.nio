@@ -78,7 +78,7 @@ public class Wishing extends HttpServlet {
 					onlineClient.hasAccess(AccessPermission.INVOICE_ORDER)||
 					onlineClient.hasAccess(AccessPermission.INVOICE_FACTURE)||
 					onlineClient.hasAccess(AccessPermission.BASIC)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					))){
 				response.sendError(response.SC_UNAUTHORIZED,"acceso denegado");return;
 			}
@@ -162,7 +162,7 @@ public class Wishing extends HttpServlet {
 						if(!(
 								onlineClient.hasAccess(AccessPermission.INVOICE_FACTURE)||
 								onlineClient.hasAccess(AccessPermission.BASIC)||
-								onlineClient.hasAccess(AccessPermission.ROOT)
+								onlineClient.hasAccess(AccessPermission.ADMIN)
 								)){
 							response.sendError(response.SC_UNAUTHORIZED,"acceso denegado");return;
 						}
@@ -172,7 +172,7 @@ public class Wishing extends HttpServlet {
 						if(!(
 								onlineClient.hasAccess(AccessPermission.INVOICE_SAMPLE)||
 								onlineClient.hasAccess(AccessPermission.BASIC)||
-								onlineClient.hasAccess(AccessPermission.ROOT)
+								onlineClient.hasAccess(AccessPermission.ADMIN)
 								)){
 							response.sendError(response.SC_UNAUTHORIZED,"acceso denegado");return;
 						}
@@ -183,7 +183,7 @@ public class Wishing extends HttpServlet {
 						if(!(
 								onlineClient.hasAccess(AccessPermission.INVOICE_ORDER)||
 								onlineClient.hasAccess(AccessPermission.BASIC)||
-								onlineClient.hasAccess(AccessPermission.ROOT)
+								onlineClient.hasAccess(AccessPermission.ADMIN)
 								)){
 							response.sendError(response.SC_UNAUTHORIZED,"acceso denegado");return;
 						}

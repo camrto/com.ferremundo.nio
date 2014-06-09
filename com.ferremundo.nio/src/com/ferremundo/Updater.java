@@ -69,7 +69,7 @@ public class Updater extends HttpServlet{
 		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
 		if(!(onlineClient.isAuthenticated(req)&&(
 				onlineClient.hasAccess(AccessPermission.PRODUCT_UPDATE)||
-				onlineClient.hasAccess(AccessPermission.ROOT)
+				onlineClient.hasAccess(AccessPermission.ADMIN)
 				))){
 			resp.sendError(resp.SC_UNAUTHORIZED,"acceso denegado");return;
 		}

@@ -44,7 +44,7 @@ public class InvoiceCancelling extends HttpServlet{
 			response.setContentType("application/json");
 			if(!onlineClient.isAuthenticated(request)&&!(
 					onlineClient.hasAccess(AccessPermission.INVOICE_CANCEL)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
 				response.getWriter().write("acceso denegado");

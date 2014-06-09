@@ -63,7 +63,7 @@ public class InvoicePort extends HttpServlet{
 			if(
 					!onlineClient.isAuthenticated(request)&&!(
 					onlineClient.hasAccess(AccessPermission.AGENT_INCREMENT_EARNINGS)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
 				response.getWriter().write("acceso denegado");
@@ -147,7 +147,7 @@ public class InvoicePort extends HttpServlet{
 			if(
 					!onlineClient.isAuthenticated(request)&&!(
 					onlineClient.hasAccess(AccessPermission.AGENT_INCREMENT_EARNINGS)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
 				response.getWriter().write("acceso denegado");

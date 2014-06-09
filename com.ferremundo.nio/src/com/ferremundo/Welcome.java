@@ -30,7 +30,7 @@ public class Welcome extends HttpServlet{
 		if(!(onlineClient.isAuthenticated(req)&&(
 				onlineClient.hasAccess(AccessPermission.CONSUMMER_CREATE)||
 				onlineClient.hasAccess(AccessPermission.BASIC)||
-				onlineClient.hasAccess(AccessPermission.ROOT)
+				onlineClient.hasAccess(AccessPermission.ADMIN)
 				))){
 			resp.sendError(resp.SC_UNAUTHORIZED,"acceso denegado");return;
 		}
@@ -197,6 +197,8 @@ public class Welcome extends HttpServlet{
 	}
 	public static boolean isInteger(String str)
 	{
+		if(str==null)return false;
+		if(str.equals(""))return false;
 	    for (char c : str.toCharArray())
 	    {
 	        if (!Character.isDigit(c)) return false;

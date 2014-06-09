@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum AccessPermission {
-	ROOT,
+	ADMIN,
 	BASIC,
 	AGENT,
 	
@@ -38,11 +38,12 @@ public enum AccessPermission {
 	INVOICE_CANCEL,
 	READ_THE_BOX,
 	
-	RESET_PRODUCT_INVENTORY;
+	RESET_PRODUCT_INVENTORY,
+	REQUEST_SHOPMAN;
 	
 	public static List<AccessPermission> admin(){
 		return new ArrayList<AccessPermission>(Arrays.asList(
-				ROOT
+				ADMIN
 		));
 	}
 	

@@ -106,10 +106,12 @@ public class Shopman {
     }
 
     public static void main(String[] args) {
-		Shopman shopman= new Shopman("god of gods - root","root", "ready",new ArrayList<AccessPermission>(Arrays.asList(
-				AccessPermission.ROOT
+		/*Shopman shopman= new Shopman("root","root", "rand",new ArrayList<AccessPermission>(Arrays.asList(
+				AccessPermission.ADMIN
 		)));
-		shopman.persist();
+		*/
+    	//shopman.persist();
+    	//new Mongoi().doUpdate(Mongoi.SHOPMANS, "{\"login\":\"root\"}", "{\"name\":\"ADMIN\"}");
 	}
     
 }

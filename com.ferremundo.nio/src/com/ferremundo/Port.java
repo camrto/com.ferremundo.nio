@@ -31,7 +31,7 @@ public class Port extends HttpServlet{
 				onlineClient.hasAccess(AccessPermission.PRODUCT_READ)||
 				onlineClient.hasAccess(AccessPermission.CONSUMMER_READ)||
 				onlineClient.hasAccess(AccessPermission.BASIC)||
-				onlineClient.hasAccess(AccessPermission.ROOT)
+				onlineClient.hasAccess(AccessPermission.ADMIN)
 				))){
 			resp.getWriter().print("{}");return;
 		}
@@ -119,7 +119,7 @@ public class Port extends HttpServlet{
 				else if(commandKind.equals("client")||commandKind.equals("agent")||commandKind.equals("agentstatus")||commandKind.equals("clientstatus")){
 					if(!(onlineClient.hasAccess(AccessPermission.CONSUMMER_READ)||
 							onlineClient.hasAccess(AccessPermission.BASIC)
-							||onlineClient.hasAccess(AccessPermission.ROOT))){
+							||onlineClient.hasAccess(AccessPermission.ADMIN))){
 						resp.getWriter().print("{\"clients\" : [ ],\"requestNumber\" : \""+requestNumber+"\"}");
 						return;
 					}

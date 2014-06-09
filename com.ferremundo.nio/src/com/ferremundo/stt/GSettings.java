@@ -12,7 +12,7 @@ public class GSettings extends Properties{
 
 	private static GSettings gSettings=null;
 	private static Properties properties;//=new Properties();
-	private static String folderBase="/opt/fm";
+	private static String folderBase="/opt/fm";//TODO unharcode here
 	/**
 	 * 
 	 */

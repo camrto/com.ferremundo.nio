@@ -274,6 +274,12 @@ public class Mongoi {
 		return dbObject;
 	}
 	
+	public DBObject doFindOne(String where, String field, String pattern) {
+		DBCollection collection = db.getCollection(where);
+		DBObject dbObject =collection.findOne((DBObject)JSON.parse("{\""+field+"\":\""+pattern+"\"}"));
+		return dbObject;
+	}
+	
 	public void doPush(String where, String matches, String json) {
 		DBCollection collection = db.getCollection(where);
 		String js="{ \"$push\" : "+json+"}";

@@ -23,7 +23,7 @@ public class ConsultTheBox extends HttpServlet{
 		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
 		if(!onlineClient.isAuthenticated(request)&&!(
 				onlineClient.hasAccess(AccessPermission.READ_THE_BOX)||
-				onlineClient.hasAccess(AccessPermission.ROOT)
+				onlineClient.hasAccess(AccessPermission.ADMIN)
 				)){
 			try {
 				response.sendError(response.SC_UNAUTHORIZED,"acceso denegado");

@@ -11,11 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Mongoi;
 import com.google.gson.Gson;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
@@ -24,26 +21,28 @@ public class DBPort extends HttpServlet{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -3780805200111442981L;
 	
-	private static final String MAKE_RECORD="@rc";
-	private static final String RETURN_RECORDS="@rr";
+	private static final String MAKE_RECORD="makerecord";
+	private static final String RETURN_RECORDS="returnrecords";
 
-	private static final String DEACTIVATE_RECORD = "@rb";
+	private static final String DEACTIVATE_RECORD = "deactivaterecord";
 	
 	private static final String RESET_PRODUCT_INVENTORY="%ri";
-	private static final String PRODUCT_INVENTORY_ADD="%ip";
+	private static final String PRODUCT_INVENTORY_ADD="productinventoryadd";
+	private static final String REQUEST_SHOPMAN="requestshopman";
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response){
 		try{
 			int clientReference=new Integer(request.getParameter("clientReference"));
 			OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
+			String locale=onlineClient.getLocale();
 			response.setCharacterEncoding("utf-8");
 			response.setContentType("application/json");
 			String command=request.getParameter("command");
 			if(command==null){
 				response.setStatus( HttpServletResponse.SC_BAD_REQUEST);
-				response.getWriter().write("comando indefinido");
+				response.getWriter().write(fromLang(locale,"UNDEFINED_COMMAND"));
 				return;
 			}
 			String dc=URLDecoder.decode(command,"utf-8");
@@ -67,9 +66,13 @@ public class DBPort extends HttpServlet{
 				resetProductInventory(request, response, onlineClient);
 				return;
 			}
+			else if(dc.equals(REQUEST_SHOPMAN)){
+				resetProductInventory(request, response, onlineClient);
+				return;
+			}
 			else{
 				response.setStatus( HttpServletResponse.SC_BAD_REQUEST);
-				response.getWriter().write("comando indefinido");
+				response.getWriter().write(fromLang(locale,"UNDEFINED_COMMAND"));
 				return;
 			}
 			
@@ -79,14 +82,20 @@ public class DBPort extends HttpServlet{
 		}
 	}
 	public static void main(String[] args) {
-		DBCursor dbCursor=new Mongoi().
+		/*DBCursor dbCursor=new Mongoi().
 				doFindFieldsMatches(
 						Mongoi.TEMPORAL_RECORDS, 
 						new String[]{"todo","login"},
 						new Object[]{true,"root"});
 		for(DBObject dbo : dbCursor){
 			System.out.println(dbo);
-		}
+		}*/
+		String callerClassName = new Exception().getStackTrace()[0].getClassName();
+		System.out.println(callerClassName);
+		System.out.println(Langed.get("UNDEFINED_COMMAND", "des","yeh"));
+		int i=10;
+		System.out.println("\"${10}\"".replaceAll("\\$\\{"+i+"\\}", "repl"));
+		
 	}
 	private void returnRecords(HttpServletRequest request,
 			HttpServletResponse response, OnlineClient onlineClient) {
@@ -94,10 +103,10 @@ public class DBPort extends HttpServlet{
 			if(
 					!onlineClient.isAuthenticated(request)&&!(
 					onlineClient.hasAccess(AccessPermission.BASIC)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("acceso denegado");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"ACCESS_DENIED"));
 				return;
 			}
 			if(requestHasArg(request, "args")){
@@ -123,7 +132,7 @@ public class DBPort extends HttpServlet{
 					}
 					else{
 						response.setStatus( HttpServletResponse.SC_NOT_ACCEPTABLE);
-						response.getWriter().write("ERROR: argumento no valido. Intenta ingresar un valor entero valido");
+						response.getWriter().write(fromLang(onlineClient.getLocale(),"INVALID_ARGUMENT"));
 						return;
 					}
 				}
@@ -147,7 +156,7 @@ public class DBPort extends HttpServlet{
 			}
 			else{
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("ERROR: argumentos no especificados");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 				return;
 			}
 		}
@@ -162,10 +171,10 @@ public class DBPort extends HttpServlet{
 			if(
 					!onlineClient.isAuthenticated(request)&&!(
 					onlineClient.hasAccess(AccessPermission.BASIC)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("acceso denegado");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"ACCESS_DENIED"));
 				return;
 			}
 			if(requestHasArg(request, "args")){
@@ -179,20 +188,20 @@ public class DBPort extends HttpServlet{
 					}
 					else{
 						response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-						response.getWriter().write("ERROR: id invalido");
+						response.getWriter().write(fromLang(onlineClient.getLocale(),"INVALID_ID"));
 						return;	
 					}
 					
 				}
 				else{
 					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-					response.getWriter().write("ERROR: argumentos no especificados");
+					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 					return;
 				}
 			}
 			else{
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("ERROR: argumentos no especificados");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 				return;
 			}
 		}
@@ -207,10 +216,10 @@ public class DBPort extends HttpServlet{
 			if(
 					!onlineClient.isAuthenticated(request)&&!(
 					onlineClient.hasAccess(AccessPermission.BASIC)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("acceso denegado");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"ACCESS_DENIED"));
 				return;
 			}
 			if(requestHasArg(request, "args")){
@@ -231,13 +240,13 @@ public class DBPort extends HttpServlet{
 				}
 				else{
 					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-					response.getWriter().write("ERROR: argumentos no especificados");
+					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 					return;
 				}
 			}
 			else{
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("ERROR: argumentos no especificados");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 				return;
 			}
 		}
@@ -257,10 +266,10 @@ public class DBPort extends HttpServlet{
 			if(
 					!onlineClient.isAuthenticated(request)&&!(
 					onlineClient.hasAccess(AccessPermission.AGENT_INCREMENT_EARNINGS)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("acceso denegado");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"ACCESS_DENIED"));
 				return;
 			}
 			if(requestHasArg(request, "args")){
@@ -321,13 +330,13 @@ public class DBPort extends HttpServlet{
 				}
 				else{
 					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-					response.getWriter().write("ERROR: argumentos no especificados");
+					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 					return;
 				}
 			}
 			else{
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("ERROR: argumentos no especificados");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 				return;
 			}
 		}
@@ -341,10 +350,10 @@ public class DBPort extends HttpServlet{
 			if(
 					!onlineClient.isAuthenticated(request)&&!(
 					onlineClient.hasAccess(AccessPermission.RESET_PRODUCT_INVENTORY)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("acceso denegado");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"ACCESS_DENIED"));
 				return;
 			}
 			if(requestHasArg(request, "args")){
@@ -354,13 +363,13 @@ public class DBPort extends HttpServlet{
 				}
 				else{
 					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-					response.getWriter().write("ERROR: argumentos no especificados");
+					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 					return;
 				}
 			}
 			else{
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("ERROR: argumentos no especificados");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 				return;
 			}
 		}
@@ -373,10 +382,10 @@ public class DBPort extends HttpServlet{
 			if(
 					!onlineClient.isAuthenticated(request)&&!(
 					onlineClient.hasAccess(AccessPermission.PRODUCT_UPDATE)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("acceso denegado");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"ACCESS_DENIED"));
 				return;
 			}
 
@@ -459,15 +468,19 @@ public class DBPort extends HttpServlet{
 		}
 	}
 	
-	private void methodTemplate(HttpServletRequest request, HttpServletResponse response,OnlineClient onlineClient){
+	private void sample(HttpServletRequest request, HttpServletResponse response,OnlineClient onlineClient){
 		try{
 			if(
 					!onlineClient.isAuthenticated(request)&&!(
-					onlineClient.hasAccess(AccessPermission.AGENT_INCREMENT_EARNINGS)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.INVOICE_SAMPLE)||
+					onlineClient.hasAccess(AccessPermission.BASIC)||
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("acceso denegado");
+				response.getWriter().write(
+						fromLang(onlineClient.getLocale(),"PERMISSION_DENIED")+". "+
+						fromLang(onlineClient.getLocale(),"PERMISSION_REQUIRED","[INVOICE_SAMPLE|BASIC|ADMIN]")
+						);
 				return;
 			}
 			if(requestHasArg(request, "args")){
@@ -477,19 +490,124 @@ public class DBPort extends HttpServlet{
 				}
 				else{
 					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-					response.getWriter().write("ERROR: argumentos no especificados");
+					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 					return;
 				}
 			}
 			else{
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("ERROR: argumentos no especificados");
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
 				return;
 			}
 		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
+	}
+	
+	private void requestShopman(HttpServletRequest request, HttpServletResponse response,OnlineClient onlineClient){
+		try{
+			if(
+					!onlineClient.isAuthenticated(request)&&!(
+					onlineClient.hasAccess(AccessPermission.REQUEST_SHOPMAN)||
+					onlineClient.hasAccess(AccessPermission.ADMIN)
+					)){
+				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"ACCESS_DENIED"));
+				return;
+			}
+			if(requestHasArg(request, "login")){
+				String login=request.getParameter("login");
+				if(!login.equals("")){
+					DBObject dbLogin=new Mongoi().doFindOne(Mongoi.SHOPMANS, "{\"login\":\""+login+"\"}");
+					response.getWriter().print("{\"result\":"+dbLogin.toString()+"}");
+					return;
+				}
+				else{
+					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS","login"));
+					return;
+				}
+			}
+			else{
+				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
+				return;
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	private void editShopman(HttpServletRequest request, HttpServletResponse response,OnlineClient onlineClient){
+		try{
+			if(
+					!onlineClient.isAuthenticated(request)&&!(
+					onlineClient.hasAccess(AccessPermission.AGENT_INCREMENT_EARNINGS)||
+					onlineClient.hasAccess(AccessPermission.ADMIN)
+					)){
+				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"ACCESS_DENIED"));
+				return;
+			}
+			if(requestHasArg(request, "args")){
+				String args=request.getParameter("args");
+				if(!args.equals("")){
+					String[] argsspl=URLDecoder.decode(args,"utf-8").split(" ");
+				}
+				else{
+					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
+					return;
+				}
+			}
+			else{
+				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
+				return;
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	private void methodTemplate(HttpServletRequest request, HttpServletResponse response,OnlineClient onlineClient){
+		try{
+			if(
+					!onlineClient.isAuthenticated(request)&&!(
+					onlineClient.hasAccess(AccessPermission.AGENT_INCREMENT_EARNINGS)||
+					onlineClient.hasAccess(AccessPermission.ADMIN)
+					)){
+				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"ACCESS_DENIED"));
+				return;
+			}
+			if(requestHasArg(request, "args")){
+				String args=request.getParameter("args");
+				if(!args.equals("")){
+					String[] argsspl=URLDecoder.decode(args,"utf-8").split(" ");
+				}
+				else{
+					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
+					return;
+				}
+			}
+			else{
+				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
+				return;
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	private String fromLang(String locale, String key, String... args){
+		return Langed.get(locale, key, args);
 	}
 
 }

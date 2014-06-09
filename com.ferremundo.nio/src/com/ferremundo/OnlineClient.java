@@ -2,6 +2,7 @@ package com.ferremundo;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import javax.servlet.ServletException;
@@ -19,11 +20,15 @@ public class OnlineClient {
 	private boolean locked=true;
 	private String token=MD5.get(new Random().nextDouble()+"");
 	private String sessionId;
+	private boolean isEaten=false;
+	private String locale;
 	
 	public OnlineClient(int clientReference, String ipAddress, String sessionId) {
 		this.clientReference = clientReference;
 		this.ipAddress = ipAddress;
 		this.sessionId=sessionId;
+		//HARDCODED TODO fix this default
+		this.locale="es";
 	}
 
 	public void clientLogged(boolean logged){
@@ -119,5 +124,21 @@ public class OnlineClient {
 	
 	public boolean hasAccess(AccessPermission permission){
 		return ClientAuthenticate.hasAccess(this, permission);
+	}
+
+	public boolean isEaten() {
+		return isEaten;
+	}
+
+	public void setEaten(boolean isEaten) {
+		this.isEaten = isEaten;
+	}
+
+	public String getLocale() {
+		return locale;
+	}
+
+	public void setLocale(String locale) {
+		this.locale = locale;
 	}
 }

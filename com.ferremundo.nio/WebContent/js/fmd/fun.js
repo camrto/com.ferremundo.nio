@@ -713,12 +713,12 @@ resetClient=function(){
 	onLogChange();
 	$("#commands").val('');
 	$("#commands").focus();
-	$("#records").val('');
+	$("#records").empty();
 	$.ajax({
-		url: 'dbport',
+		url: CONTEXT_PATH+'/dbport',
 		type:'POST',
 		data: {
-			command:"@rr",
+			command:"deactivaterecord",
 			args: "",
 			requestNumber: REQUEST_NUMBER,
 			consummerType: client?client.consummerType:1,
@@ -738,7 +738,7 @@ resetClient=function(){
 			    var yyyy = pdd.getFullYear();
 			    var date = yyyy+'.'+mm + '.' + dd;
 				var src="<div id=record-"+r.id+">"+r.id+" | "+date+" | "+r.text+"</div>";
-				$('#records').empty();
+				//$('#records').empty();
 				nodeLog(src,"#records","box fleft");
 			}
 			

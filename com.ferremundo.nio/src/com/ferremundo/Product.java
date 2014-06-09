@@ -309,6 +309,7 @@ public class Product implements Serializable {
 				if(ob1.get("code").equals(ob2.get("code"))){lst.remove(i);i--;}
 			}
 		}
+		if(!isLastSearch(onlineClient, requestNumber))return null;
 		return lst;
 	}
 	

@@ -5,6 +5,45 @@ xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 
+<filter>
+	<filter-name>loginFilter</filter-name>
+	<filter-class>com.ferremundo.LoginFilter</filter-class>
+</filter>
+<filter-mapping>
+<filter-name>loginFilter</filter-name>
+<url-pattern>/wi/*</url-pattern>
+</filter-mapping>
+
+<filter>
+	<filter-name>authFilter</filter-name>
+	<filter-class>com.ferremundo.AuthFilter</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>authFilter</filter-name>
+	<url-pattern>/auth</url-pattern>
+</filter-mapping>
+
+<servlet> 
+	<description></description> 
+	<display-name>auth</display-name> 
+	<servlet-name>auth</servlet-name> 
+	<jsp-file>/WEB-INF/auth.jsp</jsp-file> 
+</servlet> 
+<servlet-mapping> 
+	<servlet-name>auth</servlet-name> 
+	<url-pattern>/auth</url-pattern> 
+</servlet-mapping>
+
+<servlet> 
+	<description></description> 
+	<display-name>op</display-name> 
+	<servlet-name>op</servlet-name> 
+	<jsp-file>/wi/op.jsp</jsp-file> 
+</servlet> 
+<servlet-mapping> 
+	<servlet-name>op</servlet-name> 
+	<url-pattern>/wi/op</url-pattern> 
+</servlet-mapping> 
 
 <security-constraint>
     <web-resource-collection>
@@ -199,7 +238,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	</servlet-mapping>
 	
 	<welcome-file-list>
-		<welcome-file>init.jsp</welcome-file>
+		<welcome-file>wi/init.jsp</welcome-file>
 	</welcome-file-list>
 	
 </web-app>

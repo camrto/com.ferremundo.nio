@@ -159,7 +159,7 @@ public class ClientAuthenticate extends HttpServlet{
 		List<AccessPermission> clientPermissions=onlineClient.getShopman().getPermissions();
 		int csize=clientPermissions.size();
 		for(int j=0;j<csize;j++){
-			if(clientPermissions.get(j).equals(AccessPermission.ROOT)){
+			if(clientPermissions.get(j).equals(AccessPermission.ADMIN)){
 				return true;
 			}
 		}

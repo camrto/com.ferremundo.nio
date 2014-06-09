@@ -33,7 +33,7 @@ public class ClientHistory extends HttpServlet{
 					(where.equals(Mongoi.AGENTS)&&onlineClient.hasAccess(AccessPermission.AGENT_READ))||
 					(where.equals(Mongoi.CLIENTS)&&onlineClient.hasAccess(AccessPermission.CONSUMMER_READ))||
 					onlineClient.hasAccess(AccessPermission.BASIC)||
-					onlineClient.hasAccess(AccessPermission.ROOT)
+					onlineClient.hasAccess(AccessPermission.ADMIN)
 					)){
 				response.sendError(response.SC_UNAUTHORIZED,"acceso denegado");return;
 			}

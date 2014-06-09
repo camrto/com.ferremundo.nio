@@ -35,7 +35,7 @@ public class InvoicePayment extends HttpServlet{
 		if(!onlineClient.isAuthenticated(request)&&!(
 				onlineClient.hasAccess(AccessPermission.INVOICE_ORDER_PAY_ON_CREDIT)||
 				onlineClient.hasAccess(AccessPermission.BASIC)||
-				onlineClient.hasAccess(AccessPermission.ROOT)
+				onlineClient.hasAccess(AccessPermission.ADMIN)
 				)){
 			response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
 			response.getWriter().write("acceso denegado");

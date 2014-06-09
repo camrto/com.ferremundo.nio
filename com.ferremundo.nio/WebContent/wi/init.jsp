@@ -1,15 +1,45 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 
 
 
-<%@page import="com.ferremundo.OnlineClients"%>
-<%@page import="com.ferremundo.OnlineClient"%><html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="js/URLEncode.js"></script>
+<script type="text/javascript" src="js/jquery.capsule.js"></script>
+<script type="text/javascript">
+/*
+OnlineClients clients= OnlineClients.instance();
+OnlineClient onlineClient=null;
+String ref=request.getParameter("clientReference");
+int iref=-1;
+boolean auth=false;
+if(Utils.isInteger(ref)){
+	iref=Integer.parseInt(ref);
+	if(clients.has(iref)){
+		onlineClient=clients.get(iref);
+		
+	}
+	else auth=true;
+}
+else auth=true;
+if(auth)response.sendRedirect("/auth?back=/");
+String ipAddres=onlineClient.getIpAddress();
+out.println("\tvar IP_ADDRESS='"+ipAddres+"';");
+int clientReference=clients.add(ipAddres,request.getSession().getId());
+out.println("\tvar CLIENT_REFERENCE="+iref+";");
+//OnlineClient onlineClient=clients.get(clientReference);
+out.println("\tvar TOKEN='"+onlineClient.getToken()+"';");
+//out.println("\tvar SID='"+request.getSession().getId()+"';");
+request.getSession().setMaxInactiveInterval(60*60*8);
+System.out.println("CLIENT_REFERENCE="+clientReference+";\n"+"IP_ADDRESS='"+ipAddres+"';\n"+"TOKEN='"+onlineClient.getToken()+"';");
+*/
+</script>
 <script type="text/javascript" src="js/jquery.sexytable-1.1.js"></script>
 <script type="text/javascript" src="js/jquery.editable.js"></script>
 <!-- 
@@ -32,8 +62,8 @@
 <script type="text/javascript" src="js/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="js/jquery.editable.js"></script>
 <script type="text/javascript" src="js/jquery.caret.1.02.min.js"></script>
-<script type="text/javascript" src="js/URLEncode.js"></script>
-<script type="text/javascript" src="js/jquery.capsule.js"></script>
+<!--script type="text/javascript" src="js/URLEncode.js"></script>
+<script type="text/javascript" src="js/jquery.capsule.js"></script-->
 
 <script type="text/javascript" src="js/cps/SysAuth.js"></script>
 <script type="text/javascript" src="cps/tableing.cps.js"></script>
@@ -75,29 +105,20 @@ $.capsule("http://localhost:8080/com.ferremundo.nio/cps/global.cps.js");
 
 var REQUEST_NUMBER=0;
 
+var TOKEN="${token}";
+var CLIENT_REFERENCE="${clientReference}";
+var SHOPMAN=${shopman};
+var CONTEXT_PATH="${pageContext.request.contextPath}";
+var AUTHORIZED=true;
 
-<%
-OnlineClients clients= OnlineClients.instance();
-String ipAddres=request.getRemoteAddr();
-out.println("\tvar IP_ADDRESS='"+ipAddres+"';");
-int clientReference=clients.add(ipAddres,request.getSession().getId());
-out.println("\tvar CLIENT_REFERENCE="+clientReference+";");
-OnlineClient onlineClient=clients.get(clientReference);
-out.println("\tvar TOKEN='"+onlineClient.getToken()+"';");
-request.getSession().setMaxInactiveInterval(60*60*8);
-System.out.println("CLIENT_REFERENCE="+clientReference+";\n"+"IP_ADDRESS='"+ipAddres+"';\n"+"TOKEN='"+onlineClient.getToken()+"';");
-%>
-
-var AUTHORIZED=false;
-
-var shopman={};
+var shopman=SHOPMAN;
 var inputValue;
 var products;
 var productsLog=[];
 var clients;
 var client=new Client_("-1","PUBLICO EN GRAL",1,".","MORELIA",".","MICH",".",".","PARA FACTURAR",".",0,"");
 var agent=null;
-var shopman=new setShopman("unauthorized");
+//var shopman=new setShopman("unauthorized");
 var metadata=new setMetadata(1);// INVOICE_TYPE_ORDER
 var requester=new setRequester(-1,"publico","publico");
 var seller=new setSeller(-1,"none");
@@ -113,6 +134,8 @@ console.log(client);
 $(document).ready(function(){
 	
 	//$('#commands').CreateBubblePopup({innerHtml: 'comandos'});
+	resetClient();
+	$('#shopmanSession').html(':'+SHOPMAN.name+":"+SHOPMAN.login);
 	autocomplete('#commands');
 	/*$("#login-form").dialog({
         autoOpen: false,
@@ -136,6 +159,29 @@ $(document).ready(function(){
 			$('#login-form').dialog("option",'hide','explode');
         }
     });*/
+    $('#commands').focus();
+    $( document ).idle({
+		idle:1000*60*5,
+		onIdle: function(){
+			var doIdle=document.isIdle?false:true;
+			if(doIdle)document.isIdle=true;
+			else return;
+			lockin();
+			var passinid='passid'+$.capsule.randomString(1,15,'aA0');
+			passin({
+				id:passinid,
+				success:function(data){
+					AUTHORIZED=true;
+					//alert("success " +data.authenticated+". #"+passinid+" to be removed")
+					$('#'+passinid).remove();
+					document.isIdle=false;
+					$('#commands').focus();
+				},
+				message:"desbloquear "+SHOPMAN.name+"-"+SHOPMAN.login
+			});
+		}
+	});
+    /*
     var authid='authid'+$.capsule.randomString(1,15,'aA0');
 	authin({
 		id:authid, 
@@ -174,6 +220,7 @@ $(document).ready(function(){
 		},
 		message:"autenticarse"
 	});
+	*/
 	/*
 	$( "#lock-form" ).dialog({
         autoOpen: false,
@@ -348,7 +395,7 @@ $(document).ready(function(){
 				document.isIdle=false;
 				$('#commands').focus();
 			},
-			message:"desbloquear "+SHOPMAN
+			message:"desbloquear "+SHOPMAN.name+"-"+SHOPMAN.login
 		});
 	});
 	
@@ -923,7 +970,7 @@ $(document).ready(function(){
 					url: 'dbport',
 					type:'POST',
 					data: {
-						command:commandline.command,
+						command:commandline.kind,
 						args: encodeURIComponent(commandline.args.join(" ")),
 						requestNumber: REQUEST_NUMBER,
 						consummerType: client?client.consummerType:1,
@@ -958,7 +1005,7 @@ $(document).ready(function(){
 					url: 'dbport',
 					type:'POST',
 					data: {
-						command:commandline.command,
+						command:commandline.kind,
 						args: commandline.args.join(" "),
 						requestNumber: REQUEST_NUMBER,
 						consummerType: client?client.consummerType:1,
@@ -988,7 +1035,7 @@ $(document).ready(function(){
 						url: 'dbport',
 						type:'POST',
 						data: {
-							command:encodeURIComponent(commandline.command),
+							command:commandline.kind,
 							args: commandline.args.join(" "),
 							requestNumber: REQUEST_NUMBER,
 							consummerType: client?client.consummerType:1,
@@ -1340,7 +1387,7 @@ $(document).ready(function(){
 <title>Ferremundo - pedidos</title>
 </head>
 <body>
-
+<div id="shopmanSession"></div>
 
 
 <div class="ui-widget">
@@ -1413,11 +1460,11 @@ $(document).ready(function(){
 
 <div style="position: relative; width: 100%">
 <div id="log" style="height: 500px; width: 100%; overflow: auto;" class="ui-widget-content"></div>
-<div id="records"></div>
 </div>
 
 <div id="resultset" style="width: 100%;" class=""></div>
 <div id="logResultset" style="width: 100%;" class=""></div>
+<div id='records'>records</div>
 <!--
 <div id="login-form" title="Login">
     <form>

@@ -158,8 +158,10 @@ authin=function(dats){
 	$login.focus();
 	$password.bind('keypress',function(event){
 		if(event.which!=13)return;
+		var blockid="blockID"+$.capsule.randomString(1,15,'aA0');
+		var block=$('body').inBlockIn({content:'<img src="img/waitmini.gif" />', id:blockid});
 		$.ajax({
-			url: "clientauthenticate",
+			url: CONTEXT_PATH+"/clientauthenticate",
 			dataType: "json",
 			type: 'POST',
 			data: {
@@ -168,11 +170,12 @@ authin=function(dats){
 				token: TOKEN,
 				clientReference: CLIENT_REFERENCE
 			},success: function(data) {
-				SHOPMAN=data.shopman.name;
+				
 				dats.success(data);
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				alert(jqXHR.responseText+" - "+textStatus+" - "+errorThrown);
+				dats.error(jqXHR, textStatus, errorThrown);
+				block.remove();
 			}
 		});
 	});
@@ -189,7 +192,7 @@ passin=function(dats){
 		}
 		if(event.which!=13)return;
 		$.ajax({
-			url: "clientauthenticate",
+			url: CONTEXT_PATH+"/clientauthenticate",
 			dataType: "json",
 			type: 'POST',
 			data: {
@@ -208,7 +211,7 @@ passin=function(dats){
 lockin=function(){
 	AUTHORIZED=false;
 	$.ajax({
-		url: "clientauthenticate",
+		url: CONTEXT_PATH+"/clientauthenticate",
 		dataType: "json",
 		type:'POST',
 		async:false,
@@ -242,7 +245,7 @@ registerShopmanIn=function(){
 		}
 		if(event.which!=13)return;
 		$.ajax({
-			url: "clientauthenticate",
+			url: CONTEXT_PATH+"/clientauthenticate",
 			dataType: "json",
 			type:'POST',
 			data: {
@@ -337,7 +340,7 @@ addConsummerIn=function(where){
 				state, email, cp, rfc, tel,
 				payment, null, null);
 		$.ajax({
-			url: 'welcome',
+			url: CONTEXT_PATH+"/welcome",
 			type:'POST',
 			data: {
 				client : encodeURIComponent($.toJSON(client)),
@@ -355,7 +358,7 @@ addConsummerIn=function(where){
 					var jsonsrt="["+$.toJSON(productsLog[j])+"]";
 					$.ajax({
 						index : j,
-						url: "getthis",
+						url: CONTEXT_PATH+"/getthis",
 						type:'POST',
 						data: {
 							list:encodeURIComponent(jsonsrt),
